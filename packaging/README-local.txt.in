@@ -1,0 +1,159 @@
+Codex Usage Tray Lite {{VERSION}}
+================================
+
+Portable Windows x64 package. This is an unofficial community derivative of
+saveway/codex-usage-monitor, based on {{BASELINE_TAG}} ({{BASELINE_COMMIT}}).
+License: GPL-3.0-only. See LICENSE.txt and THIRD_PARTY_NOTICES.md.
+
+Run
+---
+Extract the entire ZIP to one folder, then start CodexUsageTrayLite.exe.
+Keep the runtimes, ja-JP, ko-KR, zh-CN, and zh-TW subfolders and all DLL/config
+files beside the EXE. The four language subfolders contain the compiled Japanese,
+Korean, and Chinese resources.
+See RELEASE_NOTES.md and CHANGELOG.md for the English release documentation.
+The complete Simplified Chinese editions are RELEASE_NOTES.zh-CN.md and
+CHANGELOG.zh-CN.md.
+
+Usage source
+------------
+The tray menu offers Usage source > WebView2 or Codex CLI. WebView2 is the
+default. Codex CLI mode requires an existing Codex CLI installation that is
+already signed in with ChatGPT (run "codex login" if needed). The CLI itself,
+Node.js, and its credentials are not included or read by this package.
+
+Switching to either source performs one immediate validation fetch. Returning
+to WebView2 reuses its saved login profile; the login window is needed only if
+that validation reports login-required. A CLI app-server process is used only
+while reading usage and is then closed. Refresh now can retry a missing or
+unsigned-in CLI; periodic refresh starts only after a successful read. Proxy
+settings and Clear login session apply only to WebView2. The Help item above
+About provides a short in-app summary of both source modes and the application's
+security and privacy boundaries.
+
+Refresh interval
+----------------
+Refresh interval offers 1, 2, 5, 10, 15, 30, and 60 minutes. The default
+remains 15 minutes; the shorter intervals are explicit opt-in choices.
+
+Icon style
+----------
+Icon style, directly below Refresh interval, offers 5-Hour Only, Weekly Only,
+Both (Default), and Side by Side. The single checked choice is saved and
+restored; existing choices are preserved and new settings still default to Both.
+Both keeps the established overlay icon. Side by Side uses a gapless Weekly-left
+and 5-Hour-right pair of flat rectangles when both limits apply; when 5-Hour is
+authoritatively not applicable, Weekly expands across the complete inner frame.
+Ambiguous applicability remains Unknown. Weekly Only hides the 5-Hour layer.
+5-Hour Only hides Weekly; confirmed Pro Weekly-only data shows an empty frame
+with "i" instead of inventing a quota value. Unknown, error, and login-required
+states remain distinct. The boxed "i", "?", and "L" use large bold red glyphs
+uniformly fitted without changing their original aspect ratios; the error slash
+keeps its separate existing treatment.
+
+After a successful refresh, the tooltip contains quota information only: a
+5-Hour line plus Weekly for an applicable dual-window account, including Plus,
+or Weekly alone for a detected Pro or authoritative Weekly-only account. Email and source
+tags are not added to the tooltip. The tray status rows are Email, User Level,
+5-Hour, Weekly, Usage resets, and Last updated. The 5-Hour menu row remains
+visible as N/A for Pro and Weekly-only accounts.
+
+In 5-Hour Only mode, the tooltip reports only 5-Hour and shows `5-Hour N/A`
+when that quota is confirmed unavailable. Weekly Only and Both retain the
+existing tooltip rules above rather than filtering text to the visible layers.
+
+CLI reads Email and supported exact Free/Go/Plus/Pro levels from the documented
+account/read response. WebView2 uses a small same-origin session request and an
+exact rendered-page badge fallback for the level; if that optional lookup is
+unavailable, usage refresh still succeeds and User Level stays Unknown. Pro
+5x/20x variants are intentionally not detected in this version.
+
+The Usage resets row shows available banked resets when the selected source
+returns a count. CLI reads it from the same rate-limit response.
+WebView2 accepts an explicit numeric statement, or uses a normal desktop-layout
+viewport and a short delayed DOM probe to count enabled "Use reset" actions in
+the rendered "Usage limit resets" section (one action row equals one reset).
+Descriptive, disabled, hidden, and out-of-section text is not counted. Missing
+or stale-source data is shown as Unknown, not zero. An explicit page banner
+stating that no usage-limit resets are available maps to 0. This value is not
+added to the tooltip. Background WebView2 creates an unshown, non-activating host HWND,
+so periodic refresh does not take foreground activation or interrupt the
+Windows screen saver.
+
+Appearance
+----------
+Use Theme > Follow Windows, Light, or Dark from the tray menu. The selection
+applies to the tray menu, Proxy, Help, About, the login-window chrome, and WebView2's
+preferred page color scheme. Individual login providers may keep their own
+website theme.
+
+Use Language > English, Simplified Chinese, Traditional Chinese, Japanese, or
+Korean to change the application UI immediately. A fresh installation selects
+the matching Chinese, Japanese, or Korean language from the Windows UI language
+when applicable and otherwise starts in English. Existing installations keep
+their saved language until changed. Tooltips intentionally retain their compact
+English quota format.
+
+The EXE and File Explorer use the Light Option C code-meter identity icon by
+default. Proxy, Help, About, and Login / Usage title bars choose the matching
+Light or Dark icon from the same effective palette as the window. Explicit
+application Light/Dark modes therefore stay visually consistent; Follow Windows
+resolves both the window and icon from the current Windows app theme. Open Follow
+Windows dialogs refresh after Windows appearance changes. The live tray icon
+remains the dynamic dual-quota meter. Application prompts use localized button
+captions while retaining the familiar Windows status glyphs and modal behavior.
+
+Target requirements
+-------------------
+- Windows 11 x64
+- .NET Framework 4.8 or later
+- Microsoft Edge WebView2 Evergreen Runtime (for WebView2 source)
+- Installed Codex CLI on PATH and "codex login" (for Codex CLI source)
+
+Windows 11 normally provides .NET Framework 4.8 or later, and many Windows 11
+installations already have WebView2 Runtime. These two Microsoft system
+components are not embedded in this small portable ZIP. Codex CLI is likewise
+not bundled. Missing prerequisites are reported instead of being silently
+installed.
+
+Local data
+----------
+Runtime data is created only under:
+  %LOCALAPPDATA%\CodexUsageTrayLite
+
+The full account email is held in process memory only and is never written to
+settings or logs. Logs use structured level=info|warning|error and event fields;
+successful identity reads record only a fixed masked address. Open
+logs also records process-lifecycle diagnostics without quota values. Codex CLI
+entries show whether stdin shutdown was graceful or whether
+the exact launched process required the timed Kill/Job fallback. WebView2
+entries separately show controller Close, unexpected process failure details,
+and the runtime's actual BrowserProcessExited event; this app never kills a
+WebView2 process.
+
+After a normal Codex CLI root exit, descendants receive up to 500 ms to exit
+naturally before Job Object cleanup is classified. Open logs launches the log
+file directly through its Windows file association; Open config folder still
+opens the application data directory.
+
+CodexUsageTrayLite.log is the active log for the current local day. Before the
+first write after local midnight, the prior non-empty log is archived as
+CodexUsageTrayLite_YYYYMMDD.log. Daily archives stay in the logs directory and
+are not removed automatically.
+
+The webview2-profile folder contains sensitive authenticated session data.
+Never upload, share, or publicly synchronize it. This package contains no
+profile, settings, log, token, cookie, password, dump, PDB, or environment file.
+
+Validation
+----------
+The packaging run completed {{TEST_COUNT}} automated tests before creating this
+ZIP. SHA256SUMS.txt covers every application file inside the package. The
+matching .zip.sha256 file beside the ZIP covers the ZIP itself.
+
+The documented 8-12 hour naturally spaced WebView2 soak remains a release gate
+before public distribution. This build has no desktop Widget, Windows
+toast/balloon notification, telemetry, auto-update, installer, cloud backend,
+or credential extraction.
+
+Corresponding source: https://github.com/zjwww/Codex-Usage-Tray-Lite/tree/v0.2.16

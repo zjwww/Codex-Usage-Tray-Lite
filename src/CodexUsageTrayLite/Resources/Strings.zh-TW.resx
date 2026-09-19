@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="RefreshNow" xml:space="preserve"><value>立即重新整理</value></data>
+  <data name="OpenLogin" xml:space="preserve"><value>開啟登入 / 用量頁面</value></data>
+  <data name="CodexCliLoginHelp" xml:space="preserve"><value>Codex CLI 登入說明</value></data>
+  <data name="UsageSourceMenu" xml:space="preserve"><value>用量來源</value></data>
+  <data name="UsageSourceWebView2" xml:space="preserve"><value>WebView2</value></data>
+  <data name="UsageSourceCodexCli" xml:space="preserve"><value>Codex CLI</value></data>
+  <data name="RefreshInterval" xml:space="preserve"><value>重新整理間隔</value></data>
+  <data name="IconStyleMenu" xml:space="preserve"><value>圖示樣式</value></data>
+  <data name="IconStyleFiveHourOnly" xml:space="preserve"><value>僅 5-Hour</value></data>
+  <data name="IconStyleWeeklyOnly" xml:space="preserve"><value>僅 Weekly</value></data>
+  <data name="IconStyleBoth" xml:space="preserve"><value>兩者（預設）</value></data>
+  <data name="IconStyleSideBySide" xml:space="preserve"><value>並排雙條</value></data>
+  <data name="StartAtLogin" xml:space="preserve"><value>隨開機啟動</value></data>
+  <data name="ProxySettings" xml:space="preserve"><value>Proxy 設定（WebView2）</value></data>
+  <data name="Theme" xml:space="preserve"><value>主題</value></data>
+  <data name="ThemeFollowWindows" xml:space="preserve"><value>跟隨 Windows</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>淺色</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>深色</value></data>
+  <data name="LanguageMenu" xml:space="preserve"><value>語言</value></data>
+  <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="LanguageChineseSimplified" xml:space="preserve"><value>简体中文</value></data>
+  <data name="LanguageChineseTraditional" xml:space="preserve"><value>繁體中文</value></data>
+  <data name="LanguageJapanese" xml:space="preserve"><value>日本語</value></data>
+  <data name="LanguageKorean" xml:space="preserve"><value>한국어</value></data>
+  <data name="OpenLogs" xml:space="preserve"><value>開啟記錄檔</value></data>
+  <data name="OpenConfig" xml:space="preserve"><value>開啟設定資料夾</value></data>
+  <data name="ClearSession" xml:space="preserve"><value>清除 WebView2 登入工作階段</value></data>
+  <data name="Help" xml:space="preserve"><value>說明</value></data>
+  <data name="About" xml:space="preserve"><value>關於</value></data>
+  <data name="Exit" xml:space="preserve"><value>結束</value></data>
+  <data name="Unknown" xml:space="preserve"><value>未知</value></data>
+  <data name="Never" xml:space="preserve"><value>從未</value></data>
+  <data name="MinutesSingularFormat" xml:space="preserve"><value>{0} 分鐘</value></data>
+  <data name="MinutesPluralFormat" xml:space="preserve"><value>{0} 分鐘</value></data>
+  <data name="AccountEmailFormat" xml:space="preserve"><value>電子郵件帳號：{0}</value></data>
+  <data name="UserLevelFormat" xml:space="preserve"><value>使用者等級：{0}</value></data>
+  <data name="UsageResetsCountFormat" xml:space="preserve"><value>用量重設：{0} 個</value></data>
+  <data name="UsageResetsUnknownFormat" xml:space="preserve"><value>用量重設：{0}</value></data>
+  <data name="LastUpdatedFormat" xml:space="preserve"><value>上次更新：{0} ({1})</value></data>
+  <data name="LastUpdatedNeverFormat" xml:space="preserve"><value>上次更新：{0}</value></data>
+  <data name="ProxyDialogTitle" xml:space="preserve"><value>Proxy 設定</value></data>
+  <data name="ProxyModeLabel" xml:space="preserve"><value>Proxy 模式：</value></data>
+  <data name="ProxyHostLabel" xml:space="preserve"><value>Proxy 主機：</value></data>
+  <data name="ProxyPortLabel" xml:space="preserve"><value>Proxy 連接埠：</value></data>
+  <data name="ProxySystem" xml:space="preserve"><value>系統（Windows 設定）</value></data>
+  <data name="ProxyDirect" xml:space="preserve"><value>直接連線（不使用 Proxy）</value></data>
+  <data name="ProxyHttp" xml:space="preserve"><value>自訂 HTTP Proxy</value></data>
+  <data name="ProxySocks5" xml:space="preserve"><value>自訂 SOCKS5 Proxy</value></data>
+  <data name="ProxySystemDescription" xml:space="preserve"><value>使用 Windows 中的 Proxy 設定。</value></data>
+  <data name="ProxyDirectDescription" xml:space="preserve"><value>直接連線並略過 Windows Proxy 設定。</value></data>
+  <data name="ProxyHttpDescription" xml:space="preserve"><value>使用下方的 HTTP Proxy 主機和連接埠。</value></data>
+  <data name="ProxySocks5Description" xml:space="preserve"><value>使用下方的 SOCKS5 Proxy 主機和連接埠。</value></data>
+  <data name="Save" xml:space="preserve"><value>儲存</value></data>
+  <data name="Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="Ok" xml:space="preserve"><value>確定</value></data>
+  <data name="Yes" xml:space="preserve"><value>是</value></data>
+  <data name="No" xml:space="preserve"><value>否</value></data>
+  <data name="InvalidProxySettings" xml:space="preserve"><value>Proxy 設定無效</value></data>
+  <data name="ProxyValidationPort" xml:space="preserve"><value>Proxy 連接埠必須是 1 到 65535 之間的數字。</value></data>
+  <data name="ProxyValidationHost" xml:space="preserve"><value>Proxy 主機必須是有效的 DNS 名稱或 IP 位址。</value></data>
+  <data name="HelpDialogTitleFormat" xml:space="preserve"><value>{0} 說明</value></data>
+  <data name="HelpHeading" xml:space="preserve"><value>用量來源說明</value></data>
+  <data name="HelpBody" xml:space="preserve"><value>請從「用量來源」選單中選擇一種來源。
+
+WebView2
+使用程式內專用的瀏覽器設定檔。
+1. 選擇 WebView2。
+2. 開啟「開啟登入 / 用量頁面」並登入。
+3. 關閉視窗，用量資訊會自動重新整理。
+Proxy 設定僅適用於此模式。
+需要 Microsoft Edge WebView2 Runtime。
+
+Codex CLI
+使用本機已安裝的 Codex CLI 目前登入的帳號。
+1. 安裝 Codex CLI。
+2. 如有需要，執行一次「codex login」。
+3. 選擇 Codex CLI；如需重試，請選擇「立即重新整理」。
+不使用 WebView2 登入及 Proxy 設定。
+
+兩種模式都只會讀取用量資訊。本程式絕不會使用您帳號中的用量重設。
+
+安全性與隱私權
+
+本程式不會將您的登入或帳號資訊傳送給開發者或任何第三方服務。
+
+程式不會讀取或儲存密碼、Cookie 和存取權杖。WebView2 登入資料會保留在程式專用的本機瀏覽器設定檔中。Codex CLI 認證仍由 Codex CLI 管理。
+
+帳號電子郵件僅用於識別目前帳號，只會保留在記憶體中，絕不儲存；記錄檔中僅顯示遮罩形式。
+
+本程式沒有遙測功能或雲端後端。用量資訊僅供讀取，程式絕不會使用您帳號中的用量重設。</value></data>
+  <data name="AboutDialogTitleFormat" xml:space="preserve"><value>關於 {0}</value></data>
+  <data name="AboutVersionFormat" xml:space="preserve"><value>版本：{0}</value></data>
+  <data name="AboutArchitectureFormat" xml:space="preserve"><value>架構：{0}</value></data>
+  <data name="AboutTargetFrameworkFormat" xml:space="preserve"><value>目標架構：{0}</value></data>
+  <data name="AboutBuildTimeFormat" xml:space="preserve"><value>建置時間（UTC）：{0}</value></data>
+  <data name="AboutWebView2SdkFormat" xml:space="preserve"><value>WebView2 SDK: {0}</value></data>
+  <data name="AboutWebView2RuntimeFormat" xml:space="preserve"><value>WebView2 Runtime: {0}</value></data>
+  <data name="AboutBaselineFormat" xml:space="preserve"><value>上游基準：{0}</value></data>
+  <data name="AboutLicenseFormat" xml:space="preserve"><value>授權條款：{0}</value></data>
+  <data name="LoginDialogTitleFormat" xml:space="preserve"><value>{0} - 登入 / 用量</value></data>
+  <data name="LoginOpening" xml:space="preserve"><value>正在開啟 ChatGPT…</value></data>
+  <data name="LoginRuntimeStatus" xml:space="preserve"><value>需要 Microsoft Edge WebView2 Runtime。</value></data>
+  <data name="LoginTimeoutStatus" xml:space="preserve"><value>WebView2 初始化逾時。</value></data>
+  <data name="LoginInitializeFailedStatus" xml:space="preserve"><value>無法初始化登入瀏覽器。請查看記錄檔。</value></data>
+  <data name="LoginPageLoadFailed" xml:space="preserve"><value>頁面載入失敗。請檢查連線或 Proxy 設定。</value></data>
+  <data name="LoginUsageReached" xml:space="preserve"><value>已開啟用量頁面。關閉此視窗即可重新整理系統匣。</value></data>
+  <data name="LoginCompleteSignIn" xml:space="preserve"><value>請在此視窗完成登入。關閉視窗後將釋放 WebView2。</value></data>
+  <data name="AlreadyRunningFormat" xml:space="preserve"><value>{0} 已在執行。</value></data>
+  <data name="FatalStartFormat" xml:space="preserve"><value>{0} 無法啟動。
+
+{1}
+
+記錄檔：{2}</value></data>
+  <data name="LoginOpenFailed" xml:space="preserve"><value>無法開啟登入瀏覽器。詳細資訊請查看程式記錄檔。</value></data>
+  <data name="CodexCliHelpMessage" xml:space="preserve"><value>Codex CLI 模式使用本機已安裝 Codex CLI 所管理的登入狀態。
+
+如需登入，請在 PowerShell 中執行「codex login」，然後選擇「立即重新整理」。</value></data>
+  <data name="CloseLoginBeforeProxy" xml:space="preserve"><value>變更 Proxy 設定前，請先關閉目前顯示的登入 / 用量視窗。</value></data>
+  <data name="RefreshStillStopping" xml:space="preserve"><value>背景重新整理仍在停止中。請等待幾秒後再試。無需關閉一般的 Microsoft Edge 視窗。</value></data>
+  <data name="StartupChangeFailed" xml:space="preserve"><value>無法變更目前使用者的開機啟動設定。請查看記錄檔。</value></data>
+  <data name="ClearSessionPrompt" xml:space="preserve"><value>是否清除已儲存的 ChatGPT 登入工作階段？</value></data>
+  <data name="ClearSessionFailed" xml:space="preserve"><value>無法清除此程式的 WebView2 登入設定檔。請關閉所有登入視窗後再試。</value></data>
+  <data name="LogOpenFailed" xml:space="preserve"><value>無法開啟記錄檔。</value></data>
+  <data name="WebViewRuntimeRequired" xml:space="preserve"><value>需要 Microsoft Edge WebView2 Runtime。請安裝或修復 Evergreen Runtime，然後重新啟動此程式。</value></data>
+  <data name="WebViewTimeout" xml:space="preserve"><value>WebView2 初始化逾時。請檢查所選的 Proxy 模式後再試。</value></data>
+  <data name="WebViewInitializeFailedFormat" xml:space="preserve"><value>無法初始化登入瀏覽器。
+
+{0}
+
+請使用「開啟記錄檔」查看診斷詳細資訊。</value></data>
+</root>

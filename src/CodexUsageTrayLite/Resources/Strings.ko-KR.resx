@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="RefreshNow" xml:space="preserve"><value>지금 새로 고침</value></data>
+  <data name="OpenLogin" xml:space="preserve"><value>로그인 / 사용량 페이지 열기</value></data>
+  <data name="CodexCliLoginHelp" xml:space="preserve"><value>Codex CLI 로그인 도움말</value></data>
+  <data name="UsageSourceMenu" xml:space="preserve"><value>사용량 소스</value></data>
+  <data name="UsageSourceWebView2" xml:space="preserve"><value>WebView2</value></data>
+  <data name="UsageSourceCodexCli" xml:space="preserve"><value>Codex CLI</value></data>
+  <data name="RefreshInterval" xml:space="preserve"><value>새로 고침 간격</value></data>
+  <data name="IconStyleMenu" xml:space="preserve"><value>아이콘 표시</value></data>
+  <data name="IconStyleFiveHourOnly" xml:space="preserve"><value>5-Hour만</value></data>
+  <data name="IconStyleWeeklyOnly" xml:space="preserve"><value>Weekly만</value></data>
+  <data name="IconStyleBoth" xml:space="preserve"><value>둘 다(기본값)</value></data>
+  <data name="IconStyleSideBySide" xml:space="preserve"><value>나란히 표시</value></data>
+  <data name="StartAtLogin" xml:space="preserve"><value>로그인 시 시작</value></data>
+  <data name="ProxySettings" xml:space="preserve"><value>프록시 설정 (WebView2)</value></data>
+  <data name="Theme" xml:space="preserve"><value>테마</value></data>
+  <data name="ThemeFollowWindows" xml:space="preserve"><value>Windows 설정 따르기</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>라이트</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>다크</value></data>
+  <data name="LanguageMenu" xml:space="preserve"><value>언어</value></data>
+  <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="LanguageChineseSimplified" xml:space="preserve"><value>简体中文</value></data>
+  <data name="LanguageChineseTraditional" xml:space="preserve"><value>繁體中文</value></data>
+  <data name="LanguageJapanese" xml:space="preserve"><value>日本語</value></data>
+  <data name="LanguageKorean" xml:space="preserve"><value>한국어</value></data>
+  <data name="OpenLogs" xml:space="preserve"><value>로그 열기</value></data>
+  <data name="OpenConfig" xml:space="preserve"><value>설정 폴더 열기</value></data>
+  <data name="ClearSession" xml:space="preserve"><value>WebView2 로그인 세션 지우기</value></data>
+  <data name="Help" xml:space="preserve"><value>도움말</value></data>
+  <data name="About" xml:space="preserve"><value>정보</value></data>
+  <data name="Exit" xml:space="preserve"><value>종료</value></data>
+  <data name="Unknown" xml:space="preserve"><value>알 수 없음</value></data>
+  <data name="Never" xml:space="preserve"><value>없음</value></data>
+  <data name="MinutesSingularFormat" xml:space="preserve"><value>{0}분</value></data>
+  <data name="MinutesPluralFormat" xml:space="preserve"><value>{0}분</value></data>
+  <data name="AccountEmailFormat" xml:space="preserve"><value>이메일: {0}</value></data>
+  <data name="UserLevelFormat" xml:space="preserve"><value>사용자 등급: {0}</value></data>
+  <data name="UsageResetsCountFormat" xml:space="preserve"><value>사용량 재설정: {0}개</value></data>
+  <data name="UsageResetsUnknownFormat" xml:space="preserve"><value>사용량 재설정: {0}</value></data>
+  <data name="LastUpdatedFormat" xml:space="preserve"><value>마지막 업데이트: {0} ({1})</value></data>
+  <data name="LastUpdatedNeverFormat" xml:space="preserve"><value>마지막 업데이트: {0}</value></data>
+  <data name="ProxyDialogTitle" xml:space="preserve"><value>프록시 설정</value></data>
+  <data name="ProxyModeLabel" xml:space="preserve"><value>프록시 모드:</value></data>
+  <data name="ProxyHostLabel" xml:space="preserve"><value>프록시 호스트:</value></data>
+  <data name="ProxyPortLabel" xml:space="preserve"><value>프록시 포트:</value></data>
+  <data name="ProxySystem" xml:space="preserve"><value>시스템 (Windows 설정)</value></data>
+  <data name="ProxyDirect" xml:space="preserve"><value>직접 연결 (프록시 없음)</value></data>
+  <data name="ProxyHttp" xml:space="preserve"><value>사용자 지정 HTTP 프록시</value></data>
+  <data name="ProxySocks5" xml:space="preserve"><value>사용자 지정 SOCKS5 프록시</value></data>
+  <data name="ProxySystemDescription" xml:space="preserve"><value>Windows의 프록시 구성을 사용합니다.</value></data>
+  <data name="ProxyDirectDescription" xml:space="preserve"><value>Windows 프록시 설정을 사용하지 않고 직접 연결합니다.</value></data>
+  <data name="ProxyHttpDescription" xml:space="preserve"><value>아래의 HTTP 프록시 호스트와 포트를 사용합니다.</value></data>
+  <data name="ProxySocks5Description" xml:space="preserve"><value>아래의 SOCKS5 프록시 호스트와 포트를 사용합니다.</value></data>
+  <data name="Save" xml:space="preserve"><value>저장</value></data>
+  <data name="Cancel" xml:space="preserve"><value>취소</value></data>
+  <data name="Ok" xml:space="preserve"><value>확인</value></data>
+  <data name="Yes" xml:space="preserve"><value>예</value></data>
+  <data name="No" xml:space="preserve"><value>아니요</value></data>
+  <data name="InvalidProxySettings" xml:space="preserve"><value>프록시 설정이 올바르지 않습니다</value></data>
+  <data name="ProxyValidationPort" xml:space="preserve"><value>포트는 1에서 65535 사이여야 합니다.</value></data>
+  <data name="ProxyValidationHost" xml:space="preserve"><value>호스트는 DNS 이름 또는 IP 주소여야 합니다.</value></data>
+  <data name="HelpDialogTitleFormat" xml:space="preserve"><value>{0} 도움말</value></data>
+  <data name="HelpHeading" xml:space="preserve"><value>사용량 소스 도움말</value></data>
+  <data name="HelpBody" xml:space="preserve"><value>사용량 소스 메뉴에서 소스를 선택하세요.
+
+WebView2
+앱 전용 비공개 브라우저 프로필을 사용합니다.
+1. WebView2를 선택합니다.
+2. "로그인 / 사용량 페이지 열기"를 열고 로그인합니다.
+3. 창을 닫으면 사용량이 자동으로 새로 고쳐집니다.
+프록시 설정은 이 모드에만 적용됩니다.
+Microsoft Edge WebView2 Runtime이 필요합니다.
+
+Codex CLI
+로컬에 설치된 Codex CLI에 로그인된 계정을 사용합니다.
+1. Codex CLI를 설치합니다.
+2. 필요한 경우 "codex login"을 한 번 실행합니다.
+3. Codex CLI를 선택합니다. 필요한 경우 "지금 새로 고침"을 선택하여 다시 시도합니다.
+WebView2 로그인과 프록시 설정은 사용되지 않습니다.
+
+두 모드 모두 사용량 정보만 읽습니다. 이 앱은 계정의 재설정을 절대 사용하지 않습니다.
+
+보안 및 개인정보 보호
+
+이 앱은 로그인 또는 계정 정보를 개발자나 제3자 서비스에 전송하지 않습니다.
+
+앱은 비밀번호, 쿠키 또는 액세스 토큰을 읽거나 저장하지 않습니다. WebView2 로그인 데이터는 로컬 앱 전용 브라우저 프로필에 보관됩니다. Codex CLI 자격 증명은 계속 Codex CLI에서 관리합니다.
+
+계정 이메일은 활성 계정을 식별하는 용도로만 사용됩니다. 메모리에만 보관되고 저장되지 않으며 로그에는 마스킹된 형식으로만 표시됩니다.
+
+이 앱에는 원격 분석이나 클라우드 백엔드가 없습니다. 사용량 정보는 읽기 전용이며, 이 앱은 계정의 재설정을 절대 사용하지 않습니다.</value></data>
+  <data name="AboutDialogTitleFormat" xml:space="preserve"><value>{0} 정보</value></data>
+  <data name="AboutVersionFormat" xml:space="preserve"><value>버전: {0}</value></data>
+  <data name="AboutArchitectureFormat" xml:space="preserve"><value>아키텍처: {0}</value></data>
+  <data name="AboutTargetFrameworkFormat" xml:space="preserve"><value>대상 프레임워크: {0}</value></data>
+  <data name="AboutBuildTimeFormat" xml:space="preserve"><value>빌드 시간 (UTC): {0}</value></data>
+  <data name="AboutWebView2SdkFormat" xml:space="preserve"><value>WebView2 SDK: {0}</value></data>
+  <data name="AboutWebView2RuntimeFormat" xml:space="preserve"><value>WebView2 Runtime: {0}</value></data>
+  <data name="AboutBaselineFormat" xml:space="preserve"><value>업스트림 기준: {0}</value></data>
+  <data name="AboutLicenseFormat" xml:space="preserve"><value>라이선스: {0}</value></data>
+  <data name="LoginDialogTitleFormat" xml:space="preserve"><value>{0} - 로그인 / 사용량</value></data>
+  <data name="LoginOpening" xml:space="preserve"><value>ChatGPT를 여는 중...</value></data>
+  <data name="LoginRuntimeStatus" xml:space="preserve"><value>Microsoft Edge WebView2 Runtime이 필요합니다.</value></data>
+  <data name="LoginTimeoutStatus" xml:space="preserve"><value>WebView2 초기화 시간이 초과되었습니다.</value></data>
+  <data name="LoginInitializeFailedStatus" xml:space="preserve"><value>로그인 브라우저를 초기화할 수 없습니다. 로그를 확인하세요.</value></data>
+  <data name="LoginPageLoadFailed" xml:space="preserve"><value>페이지를 불러오지 못했습니다. 연결 또는 프록시 설정을 확인하세요.</value></data>
+  <data name="LoginUsageReached" xml:space="preserve"><value>사용량 페이지가 열렸습니다. 이 창을 닫으면 트레이가 새로 고쳐집니다.</value></data>
+  <data name="LoginCompleteSignIn" xml:space="preserve"><value>이 창에서 로그인을 완료하세요. 창을 닫으면 WebView2가 해제됩니다.</value></data>
+  <data name="AlreadyRunningFormat" xml:space="preserve"><value>{0}이(가) 이미 실행 중입니다.</value></data>
+  <data name="FatalStartFormat" xml:space="preserve"><value>{0}을(를) 시작할 수 없습니다.
+
+{1}
+
+로그: {2}</value></data>
+  <data name="LoginOpenFailed" xml:space="preserve"><value>로그인 브라우저를 열 수 없습니다. 자세한 내용은 앱 로그를 확인하세요.</value></data>
+  <data name="CodexCliHelpMessage" xml:space="preserve"><value>Codex CLI 모드는 로컬에 설치된 Codex CLI에서 관리하는 로그인을 사용합니다.
+
+로그인이 필요한 경우 PowerShell에서 "codex login"을 실행한 다음 "지금 새로 고침"을 선택하세요.</value></data>
+  <data name="CloseLoginBeforeProxy" xml:space="preserve"><value>프록시 설정을 변경하기 전에 열려 있는 로그인 / 사용량 창을 닫으세요.</value></data>
+  <data name="RefreshStillStopping" xml:space="preserve"><value>백그라운드 새로 고침이 아직 중지 중입니다. 몇 초 기다린 후 다시 시도하세요. 일반 Microsoft Edge 창은 닫을 필요가 없습니다.</value></data>
+  <data name="StartupChangeFailed" xml:space="preserve"><value>현재 사용자의 시작 프로그램 설정을 변경할 수 없습니다. 로그를 확인하세요.</value></data>
+  <data name="ClearSessionPrompt" xml:space="preserve"><value>저장된 ChatGPT 로그인 세션을 지우시겠습니까?</value></data>
+  <data name="ClearSessionFailed" xml:space="preserve"><value>앱의 WebView2 로그인 프로필을 지울 수 없습니다. 모든 로그인 창을 닫고 다시 시도하세요.</value></data>
+  <data name="LogOpenFailed" xml:space="preserve"><value>로그 파일을 열 수 없습니다.</value></data>
+  <data name="WebViewRuntimeRequired" xml:space="preserve"><value>Microsoft Edge WebView2 Runtime이 필요합니다. Evergreen Runtime을 설치하거나 복구한 후 이 앱을 다시 시작하세요.</value></data>
+  <data name="WebViewTimeout" xml:space="preserve"><value>WebView2 초기화 시간이 초과되었습니다. 선택한 프록시 모드를 확인한 후 다시 시도하세요.</value></data>
+  <data name="WebViewInitializeFailedFormat" xml:space="preserve"><value>로그인 브라우저를 초기화할 수 없습니다.
+
+{0}
+
+진단 세부 정보를 보려면 "로그 열기"를 사용하세요.</value></data>
+</root>

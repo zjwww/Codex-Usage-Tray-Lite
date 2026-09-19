@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="RefreshNow" xml:space="preserve"><value>今すぐ更新</value></data>
+  <data name="OpenLogin" xml:space="preserve"><value>ログイン / 使用量ページを開く</value></data>
+  <data name="CodexCliLoginHelp" xml:space="preserve"><value>Codex CLI ログインヘルプ</value></data>
+  <data name="UsageSourceMenu" xml:space="preserve"><value>使用量の取得元</value></data>
+  <data name="UsageSourceWebView2" xml:space="preserve"><value>WebView2</value></data>
+  <data name="UsageSourceCodexCli" xml:space="preserve"><value>Codex CLI</value></data>
+  <data name="RefreshInterval" xml:space="preserve"><value>更新間隔</value></data>
+  <data name="IconStyleMenu" xml:space="preserve"><value>アイコン表示</value></data>
+  <data name="IconStyleFiveHourOnly" xml:space="preserve"><value>5-Hour のみ</value></data>
+  <data name="IconStyleWeeklyOnly" xml:space="preserve"><value>Weekly のみ</value></data>
+  <data name="IconStyleBoth" xml:space="preserve"><value>両方（既定）</value></data>
+  <data name="IconStyleSideBySide" xml:space="preserve"><value>左右並列</value></data>
+  <data name="StartAtLogin" xml:space="preserve"><value>ログイン時に起動</value></data>
+  <data name="ProxySettings" xml:space="preserve"><value>プロキシ設定 (WebView2)</value></data>
+  <data name="Theme" xml:space="preserve"><value>テーマ</value></data>
+  <data name="ThemeFollowWindows" xml:space="preserve"><value>Windows に合わせる</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>ライト</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>ダーク</value></data>
+  <data name="LanguageMenu" xml:space="preserve"><value>言語</value></data>
+  <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="LanguageChineseSimplified" xml:space="preserve"><value>简体中文</value></data>
+  <data name="LanguageChineseTraditional" xml:space="preserve"><value>繁體中文</value></data>
+  <data name="LanguageJapanese" xml:space="preserve"><value>日本語</value></data>
+  <data name="LanguageKorean" xml:space="preserve"><value>한국어</value></data>
+  <data name="OpenLogs" xml:space="preserve"><value>ログを開く</value></data>
+  <data name="OpenConfig" xml:space="preserve"><value>設定フォルダーを開く</value></data>
+  <data name="ClearSession" xml:space="preserve"><value>WebView2 のログインセッションを消去</value></data>
+  <data name="Help" xml:space="preserve"><value>ヘルプ</value></data>
+  <data name="About" xml:space="preserve"><value>バージョン情報</value></data>
+  <data name="Exit" xml:space="preserve"><value>終了</value></data>
+  <data name="Unknown" xml:space="preserve"><value>不明</value></data>
+  <data name="Never" xml:space="preserve"><value>なし</value></data>
+  <data name="MinutesSingularFormat" xml:space="preserve"><value>{0} 分</value></data>
+  <data name="MinutesPluralFormat" xml:space="preserve"><value>{0} 分</value></data>
+  <data name="AccountEmailFormat" xml:space="preserve"><value>メール：{0}</value></data>
+  <data name="UserLevelFormat" xml:space="preserve"><value>ユーザーレベル：{0}</value></data>
+  <data name="UsageResetsCountFormat" xml:space="preserve"><value>使用量リセット：{0} 件</value></data>
+  <data name="UsageResetsUnknownFormat" xml:space="preserve"><value>使用量リセット：{0}</value></data>
+  <data name="LastUpdatedFormat" xml:space="preserve"><value>最終更新：{0} ({1})</value></data>
+  <data name="LastUpdatedNeverFormat" xml:space="preserve"><value>最終更新：{0}</value></data>
+  <data name="ProxyDialogTitle" xml:space="preserve"><value>プロキシ設定</value></data>
+  <data name="ProxyModeLabel" xml:space="preserve"><value>プロキシモード：</value></data>
+  <data name="ProxyHostLabel" xml:space="preserve"><value>プロキシホスト：</value></data>
+  <data name="ProxyPortLabel" xml:space="preserve"><value>プロキシポート：</value></data>
+  <data name="ProxySystem" xml:space="preserve"><value>システム (Windows の設定)</value></data>
+  <data name="ProxyDirect" xml:space="preserve"><value>直接接続 (プロキシなし)</value></data>
+  <data name="ProxyHttp" xml:space="preserve"><value>カスタム HTTP プロキシ</value></data>
+  <data name="ProxySocks5" xml:space="preserve"><value>カスタム SOCKS5 プロキシ</value></data>
+  <data name="ProxySystemDescription" xml:space="preserve"><value>Windows のプロキシ設定を使用します。</value></data>
+  <data name="ProxyDirectDescription" xml:space="preserve"><value>Windows のプロキシ設定を使用せず、直接接続します。</value></data>
+  <data name="ProxyHttpDescription" xml:space="preserve"><value>下記の HTTP プロキシホストとポートを使用します。</value></data>
+  <data name="ProxySocks5Description" xml:space="preserve"><value>下記の SOCKS5 プロキシホストとポートを使用します。</value></data>
+  <data name="Save" xml:space="preserve"><value>保存</value></data>
+  <data name="Cancel" xml:space="preserve"><value>キャンセル</value></data>
+  <data name="Ok" xml:space="preserve"><value>OK</value></data>
+  <data name="Yes" xml:space="preserve"><value>はい</value></data>
+  <data name="No" xml:space="preserve"><value>いいえ</value></data>
+  <data name="InvalidProxySettings" xml:space="preserve"><value>プロキシ設定が無効です</value></data>
+  <data name="ProxyValidationPort" xml:space="preserve"><value>ポートは 1 ～ 65535 の範囲で指定してください。</value></data>
+  <data name="ProxyValidationHost" xml:space="preserve"><value>ホストには DNS 名または IP アドレスを指定してください。</value></data>
+  <data name="HelpDialogTitleFormat" xml:space="preserve"><value>{0} ヘルプ</value></data>
+  <data name="HelpHeading" xml:space="preserve"><value>使用量の取得元について</value></data>
+  <data name="HelpBody" xml:space="preserve"><value>「使用量の取得元」メニューから取得元を選択してください。
+
+WebView2
+アプリ専用のプライベートなブラウザープロファイルを使用します。
+1. WebView2 を選択します。
+2. 「ログイン / 使用量ページを開く」を開いてサインインします。
+3. ウィンドウを閉じると、使用量が自動的に更新されます。
+プロキシ設定はこのモードにのみ適用されます。
+Microsoft Edge WebView2 Runtime が必要です。
+
+Codex CLI
+ローカルにインストールされた Codex CLI でサインインしているアカウントを使用します。
+1. Codex CLI をインストールします。
+2. 必要に応じて「codex login」を一度実行します。
+3. Codex CLI を選択します。必要に応じて「今すぐ更新」を選択して再試行します。
+WebView2 のログイン情報とプロキシ設定は使用されません。
+
+どちらのモードも使用量情報を読み取るだけです。このアプリがお客様のアカウントのリセットを使用することはありません。
+
+セキュリティとプライバシー
+
+このアプリがログイン情報やアカウント情報を開発者または第三者のサービスに送信することはありません。
+
+パスワード、Cookie、アクセストークンをアプリが読み取ったり保存したりすることはありません。WebView2 のログインデータは、アプリ専用のローカルブラウザープロファイルに保存されます。Codex CLI の認証情報は、引き続き Codex CLI が管理します。
+
+アカウントのメールアドレスは、使用中のアカウントを識別するためだけに使用します。メモリ上にのみ保持され、保存されることはなく、ログにはマスクされた形式でのみ表示されます。
+
+このアプリにテレメトリやクラウドバックエンドはありません。使用量情報は読み取り専用であり、このアプリがお客様のアカウントのリセットを使用することはありません。</value></data>
+  <data name="AboutDialogTitleFormat" xml:space="preserve"><value>{0} のバージョン情報</value></data>
+  <data name="AboutVersionFormat" xml:space="preserve"><value>バージョン：{0}</value></data>
+  <data name="AboutArchitectureFormat" xml:space="preserve"><value>アーキテクチャ：{0}</value></data>
+  <data name="AboutTargetFrameworkFormat" xml:space="preserve"><value>ターゲットフレームワーク：{0}</value></data>
+  <data name="AboutBuildTimeFormat" xml:space="preserve"><value>ビルド日時 (UTC)：{0}</value></data>
+  <data name="AboutWebView2SdkFormat" xml:space="preserve"><value>WebView2 SDK：{0}</value></data>
+  <data name="AboutWebView2RuntimeFormat" xml:space="preserve"><value>WebView2 Runtime：{0}</value></data>
+  <data name="AboutBaselineFormat" xml:space="preserve"><value>アップストリーム基準：{0}</value></data>
+  <data name="AboutLicenseFormat" xml:space="preserve"><value>ライセンス：{0}</value></data>
+  <data name="LoginDialogTitleFormat" xml:space="preserve"><value>{0} - ログイン / 使用量</value></data>
+  <data name="LoginOpening" xml:space="preserve"><value>ChatGPT を開いています...</value></data>
+  <data name="LoginRuntimeStatus" xml:space="preserve"><value>Microsoft Edge WebView2 Runtime が必要です。</value></data>
+  <data name="LoginTimeoutStatus" xml:space="preserve"><value>WebView2 の初期化がタイムアウトしました。</value></data>
+  <data name="LoginInitializeFailedStatus" xml:space="preserve"><value>ログインブラウザーを初期化できませんでした。ログを確認してください。</value></data>
+  <data name="LoginPageLoadFailed" xml:space="preserve"><value>ページを読み込めませんでした。接続またはプロキシ設定を確認してください。</value></data>
+  <data name="LoginUsageReached" xml:space="preserve"><value>使用量ページを開きました。このウィンドウを閉じるとトレイ表示が更新されます。</value></data>
+  <data name="LoginCompleteSignIn" xml:space="preserve"><value>このウィンドウでサインインを完了してください。ウィンドウを閉じると WebView2 が解放されます。</value></data>
+  <data name="AlreadyRunningFormat" xml:space="preserve"><value>{0} はすでに実行されています。</value></data>
+  <data name="FatalStartFormat" xml:space="preserve"><value>{0} を起動できませんでした。
+
+{1}
+
+ログ：{2}</value></data>
+  <data name="LoginOpenFailed" xml:space="preserve"><value>ログインブラウザーを開けませんでした。詳細はアプリのログを確認してください。</value></data>
+  <data name="CodexCliHelpMessage" xml:space="preserve"><value>Codex CLI モードでは、ローカルにインストールされた Codex CLI が管理するログインを使用します。
+
+サインインが必要な場合は、PowerShell で「codex login」を実行してから「今すぐ更新」を選択してください。</value></data>
+  <data name="CloseLoginBeforeProxy" xml:space="preserve"><value>プロキシ設定を変更する前に、表示中のログイン / 使用量ウィンドウを閉じてください。</value></data>
+  <data name="RefreshStillStopping" xml:space="preserve"><value>バックグラウンド更新をまだ停止しています。数秒待ってから再試行してください。通常の Microsoft Edge ウィンドウを閉じる必要はありません。</value></data>
+  <data name="StartupChangeFailed" xml:space="preserve"><value>現在のユーザーのスタートアップ設定を変更できませんでした。ログを確認してください。</value></data>
+  <data name="ClearSessionPrompt" xml:space="preserve"><value>保存されている ChatGPT のログインセッションを消去しますか？</value></data>
+  <data name="ClearSessionFailed" xml:space="preserve"><value>アプリの WebView2 ログインプロファイルを消去できませんでした。すべてのログインウィンドウを閉じてから再試行してください。</value></data>
+  <data name="LogOpenFailed" xml:space="preserve"><value>ログファイルを開けませんでした。</value></data>
+  <data name="WebViewRuntimeRequired" xml:space="preserve"><value>Microsoft Edge WebView2 Runtime が必要です。Evergreen Runtime をインストールまたは修復してから、このアプリを再起動してください。</value></data>
+  <data name="WebViewTimeout" xml:space="preserve"><value>WebView2 の初期化がタイムアウトしました。選択したプロキシモードを確認してから再試行してください。</value></data>
+  <data name="WebViewInitializeFailedFormat" xml:space="preserve"><value>ログインブラウザーを初期化できませんでした。
+
+{0}
+
+診断の詳細を確認するには「ログを開く」を使用してください。</value></data>
+</root>

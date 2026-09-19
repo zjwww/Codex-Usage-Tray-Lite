@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="RefreshNow" xml:space="preserve"><value>Refresh now</value></data>
+  <data name="OpenLogin" xml:space="preserve"><value>Open login / usage page</value></data>
+  <data name="CodexCliLoginHelp" xml:space="preserve"><value>Codex CLI login help</value></data>
+  <data name="UsageSourceMenu" xml:space="preserve"><value>Usage source</value></data>
+  <data name="UsageSourceWebView2" xml:space="preserve"><value>WebView2</value></data>
+  <data name="UsageSourceCodexCli" xml:space="preserve"><value>Codex CLI</value></data>
+  <data name="RefreshInterval" xml:space="preserve"><value>Refresh interval</value></data>
+  <data name="IconStyleMenu" xml:space="preserve"><value>Icon style</value></data>
+  <data name="IconStyleFiveHourOnly" xml:space="preserve"><value>5-Hour Only</value></data>
+  <data name="IconStyleWeeklyOnly" xml:space="preserve"><value>Weekly Only</value></data>
+  <data name="IconStyleBoth" xml:space="preserve"><value>Both (Default)</value></data>
+  <data name="IconStyleSideBySide" xml:space="preserve"><value>Side by Side</value></data>
+  <data name="StartAtLogin" xml:space="preserve"><value>Start at login</value></data>
+  <data name="ProxySettings" xml:space="preserve"><value>Proxy settings (WebView2)</value></data>
+  <data name="Theme" xml:space="preserve"><value>Theme</value></data>
+  <data name="ThemeFollowWindows" xml:space="preserve"><value>Follow Windows</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>Light</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>Dark</value></data>
+  <data name="LanguageMenu" xml:space="preserve"><value>Language</value></data>
+  <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="LanguageChineseSimplified" xml:space="preserve"><value>简体中文</value></data>
+  <data name="LanguageChineseTraditional" xml:space="preserve"><value>繁體中文</value></data>
+  <data name="LanguageJapanese" xml:space="preserve"><value>日本語</value></data>
+  <data name="LanguageKorean" xml:space="preserve"><value>한국어</value></data>
+  <data name="OpenLogs" xml:space="preserve"><value>Open logs</value></data>
+  <data name="OpenConfig" xml:space="preserve"><value>Open config folder</value></data>
+  <data name="ClearSession" xml:space="preserve"><value>Clear WebView2 login session</value></data>
+  <data name="Help" xml:space="preserve"><value>Help</value></data>
+  <data name="About" xml:space="preserve"><value>About</value></data>
+  <data name="Exit" xml:space="preserve"><value>Exit</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="Never" xml:space="preserve"><value>Never</value></data>
+  <data name="MinutesSingularFormat" xml:space="preserve"><value>{0} minute</value></data>
+  <data name="MinutesPluralFormat" xml:space="preserve"><value>{0} minutes</value></data>
+  <data name="AccountEmailFormat" xml:space="preserve"><value>Email: {0}</value></data>
+  <data name="UserLevelFormat" xml:space="preserve"><value>User Level: {0}</value></data>
+  <data name="UsageResetsCountFormat" xml:space="preserve"><value>Usage resets: {0}</value></data>
+  <data name="UsageResetsUnknownFormat" xml:space="preserve"><value>Usage resets: {0}</value></data>
+  <data name="LastUpdatedFormat" xml:space="preserve"><value>Last updated: {0} ({1})</value></data>
+  <data name="LastUpdatedNeverFormat" xml:space="preserve"><value>Last updated: {0}</value></data>
+  <data name="ProxyDialogTitle" xml:space="preserve"><value>Proxy settings</value></data>
+  <data name="ProxyModeLabel" xml:space="preserve"><value>Proxy mode:</value></data>
+  <data name="ProxyHostLabel" xml:space="preserve"><value>Proxy host:</value></data>
+  <data name="ProxyPortLabel" xml:space="preserve"><value>Proxy port:</value></data>
+  <data name="ProxySystem" xml:space="preserve"><value>System (Windows settings)</value></data>
+  <data name="ProxyDirect" xml:space="preserve"><value>Direct (no proxy)</value></data>
+  <data name="ProxyHttp" xml:space="preserve"><value>Custom HTTP proxy</value></data>
+  <data name="ProxySocks5" xml:space="preserve"><value>Custom SOCKS5 proxy</value></data>
+  <data name="ProxySystemDescription" xml:space="preserve"><value>Use the proxy configuration from Windows.</value></data>
+  <data name="ProxyDirectDescription" xml:space="preserve"><value>Connect directly and bypass Windows proxy settings.</value></data>
+  <data name="ProxyHttpDescription" xml:space="preserve"><value>Use the HTTP proxy host and port below.</value></data>
+  <data name="ProxySocks5Description" xml:space="preserve"><value>Use the SOCKS5 proxy host and port below.</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Ok" xml:space="preserve"><value>OK</value></data>
+  <data name="Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="InvalidProxySettings" xml:space="preserve"><value>Invalid proxy settings</value></data>
+  <data name="ProxyValidationPort" xml:space="preserve"><value>Port must be between 1 and 65535.</value></data>
+  <data name="ProxyValidationHost" xml:space="preserve"><value>Host must be a DNS name or IP address.</value></data>
+  <data name="HelpDialogTitleFormat" xml:space="preserve"><value>{0} Help</value></data>
+  <data name="HelpHeading" xml:space="preserve"><value>Usage source help</value></data>
+  <data name="HelpBody" xml:space="preserve"><value>Choose a source from the Usage source menu.
+
+WebView2
+Uses a private in-app browser profile.
+1. Select WebView2.
+2. Open "Open login / usage page" and sign in.
+3. Close the window. Usage refreshes automatically.
+Proxy settings apply only to this mode.
+Requires the Microsoft Edge WebView2 Runtime.
+
+Codex CLI
+Uses the account signed in through the locally installed Codex CLI.
+1. Install Codex CLI.
+2. Run "codex login" once if needed.
+3. Select Codex CLI. Choose "Refresh now" to retry if needed.
+WebView2 login and proxy settings are not used.
+
+Both modes only read usage information. This app never uses a reset in your account.
+
+Security and Privacy
+
+This app does not send your login or account information to the developer or any third-party service.
+
+Passwords, cookies, and access tokens are not read or stored by the app. WebView2 login data stays in a local app-specific browser profile. Codex CLI credentials remain managed by Codex CLI.
+
+The account email is used only to identify the active account. It is kept in memory, never saved, and appears only in masked form in logs.
+
+The app has no telemetry or cloud backend. Usage information is read-only, and the app never uses a reset in your account.</value></data>
+  <data name="AboutDialogTitleFormat" xml:space="preserve"><value>About {0}</value></data>
+  <data name="AboutVersionFormat" xml:space="preserve"><value>Version: {0}</value></data>
+  <data name="AboutArchitectureFormat" xml:space="preserve"><value>Architecture: {0}</value></data>
+  <data name="AboutTargetFrameworkFormat" xml:space="preserve"><value>Target framework: {0}</value></data>
+  <data name="AboutBuildTimeFormat" xml:space="preserve"><value>Build time (UTC): {0}</value></data>
+  <data name="AboutWebView2SdkFormat" xml:space="preserve"><value>WebView2 SDK: {0}</value></data>
+  <data name="AboutWebView2RuntimeFormat" xml:space="preserve"><value>WebView2 Runtime: {0}</value></data>
+  <data name="AboutBaselineFormat" xml:space="preserve"><value>Upstream baseline: {0}</value></data>
+  <data name="AboutLicenseFormat" xml:space="preserve"><value>License: {0}</value></data>
+  <data name="LoginDialogTitleFormat" xml:space="preserve"><value>{0} - Login / Usage</value></data>
+  <data name="LoginOpening" xml:space="preserve"><value>Opening ChatGPT...</value></data>
+  <data name="LoginRuntimeStatus" xml:space="preserve"><value>Microsoft Edge WebView2 Runtime is required.</value></data>
+  <data name="LoginTimeoutStatus" xml:space="preserve"><value>WebView2 initialization timed out.</value></data>
+  <data name="LoginInitializeFailedStatus" xml:space="preserve"><value>The login browser could not be initialized. See logs.</value></data>
+  <data name="LoginPageLoadFailed" xml:space="preserve"><value>Page load failed. Check the connection or proxy settings.</value></data>
+  <data name="LoginUsageReached" xml:space="preserve"><value>Usage page reached. Close this window to refresh the tray.</value></data>
+  <data name="LoginCompleteSignIn" xml:space="preserve"><value>Complete sign-in in this window. Closing it releases WebView2.</value></data>
+  <data name="AlreadyRunningFormat" xml:space="preserve"><value>{0} is already running.</value></data>
+  <data name="FatalStartFormat" xml:space="preserve"><value>{0} could not start.
+
+{1}
+
+Log: {2}</value></data>
+  <data name="LoginOpenFailed" xml:space="preserve"><value>The login browser could not be opened. See the app log for details.</value></data>
+  <data name="CodexCliHelpMessage" xml:space="preserve"><value>Codex CLI mode uses the login managed by the locally installed Codex CLI.
+
+If sign-in is required, run "codex login" in PowerShell, then choose "Refresh now".</value></data>
+  <data name="CloseLoginBeforeProxy" xml:space="preserve"><value>Close the visible login / usage window before changing proxy settings.</value></data>
+  <data name="RefreshStillStopping" xml:space="preserve"><value>The background refresh is still stopping. Wait a few seconds and try again. You do not need to close normal Microsoft Edge windows.</value></data>
+  <data name="StartupChangeFailed" xml:space="preserve"><value>The current-user startup setting could not be changed. See logs.</value></data>
+  <data name="ClearSessionPrompt" xml:space="preserve"><value>Clear saved ChatGPT login session?</value></data>
+  <data name="ClearSessionFailed" xml:space="preserve"><value>The app's WebView2 login profile could not be cleared. Close all login windows and try again.</value></data>
+  <data name="LogOpenFailed" xml:space="preserve"><value>The log file could not be opened.</value></data>
+  <data name="WebViewRuntimeRequired" xml:space="preserve"><value>Microsoft Edge WebView2 Runtime is required. Install or repair the Evergreen Runtime, then restart this app.</value></data>
+  <data name="WebViewTimeout" xml:space="preserve"><value>WebView2 initialization timed out. Check the selected proxy mode, then try again.</value></data>
+  <data name="WebViewInitializeFailedFormat" xml:space="preserve"><value>The login browser could not be initialized.
+
+{0}
+
+Use Open logs for diagnostic details.</value></data>
+</root>

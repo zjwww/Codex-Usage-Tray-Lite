@@ -1,0 +1,26 @@
+# Build outputs and development tools
+**/bin/
+**/obj/
+.tools/
+artifacts/
+.vs/
+.vscode/
+*.user
+# Private runtime data
+webview2-profile/
+browser-profile/
+logs/
+settings.json
+*.log
+*.dmp
+*.hdmp
+*.mdmp
+*.pdb
+.env
+.env.*
+*.har
+storage-state*.json
+*.tmp
+*.bak
+Thumbs.db
+.DS_Store

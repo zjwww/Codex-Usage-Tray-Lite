@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodexUsageTrayLite", "src\CodexUsageTrayLite\CodexUsageTrayLite.csproj", "{51C12A5A-B52A-452C-BA83-822F08C0CE6A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodexUsageTrayLite.Tests", "tests\CodexUsageTrayLite.Tests\CodexUsageTrayLite.Tests.csproj", "{A938A17D-B613-46BD-A2B2-8F4F152BFD62}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{51C12A5A-B52A-452C-BA83-822F08C0CE6A}.Debug|x64.ActiveCfg = Debug|x64
+		{51C12A5A-B52A-452C-BA83-822F08C0CE6A}.Debug|x64.Build.0 = Debug|x64
+		{51C12A5A-B52A-452C-BA83-822F08C0CE6A}.Release|x64.ActiveCfg = Release|x64
+		{51C12A5A-B52A-452C-BA83-822F08C0CE6A}.Release|x64.Build.0 = Release|x64
+		{A938A17D-B613-46BD-A2B2-8F4F152BFD62}.Debug|x64.ActiveCfg = Debug|x64
+		{A938A17D-B613-46BD-A2B2-8F4F152BFD62}.Debug|x64.Build.0 = Debug|x64
+		{A938A17D-B613-46BD-A2B2-8F4F152BFD62}.Release|x64.ActiveCfg = Release|x64
+		{A938A17D-B613-46BD-A2B2-8F4F152BFD62}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+EndGlobal
