@@ -1,5 +1,9 @@
 <div align="center">
-  <img src="docs/images/logo.png" alt="Codex Usage Tray Lite logo" width="96">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/logo-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/images/logo-light.png">
+    <img src="docs/images/logo-light.png" alt="Codex Usage Tray Lite logo" width="96">
+  </picture>
   <h1>Codex Usage Tray Lite</h1>
   <p>A lightweight Windows tray companion for your remaining Codex usage.</p>
   <p>

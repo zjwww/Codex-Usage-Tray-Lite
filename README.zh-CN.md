@@ -1,5 +1,9 @@
 <div align="center">
-  <img src="docs/images/logo.png" alt="Codex Usage Tray Lite 图标" width="96">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/logo-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/images/logo-light.png">
+    <img src="docs/images/logo-light.png" alt="Codex Usage Tray Lite 图标" width="96">
+  </picture>
   <h1>Codex Usage Tray Lite</h1>
   <p>在 Windows 系统托盘中轻量查看 Codex 剩余额度。</p>
   <p>
