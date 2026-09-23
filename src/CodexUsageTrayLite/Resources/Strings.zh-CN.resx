@@ -14,10 +14,10 @@
   <data name="IconStyleMenu" xml:space="preserve"><value>图标样式</value></data>
   <data name="IconStyleFiveHourOnly" xml:space="preserve"><value>仅 5-Hour</value></data>
   <data name="IconStyleWeeklyOnly" xml:space="preserve"><value>仅 Weekly</value></data>
-  <data name="IconStyleBoth" xml:space="preserve"><value>两者（默认）</value></data>
+  <data name="IconStyleBoth" xml:space="preserve"><value>上下双层（默认）</value></data>
   <data name="IconStyleSideBySide" xml:space="preserve"><value>并排双条</value></data>
   <data name="StartAtLogin" xml:space="preserve"><value>开机启动</value></data>
-  <data name="ProxySettings" xml:space="preserve"><value>代理设置（WebView2）</value></data>
+  <data name="ProxySettings" xml:space="preserve"><value>代理设置...</value></data>
   <data name="Theme" xml:space="preserve"><value>主题</value></data>
   <data name="ThemeFollowWindows" xml:space="preserve"><value>跟随 Windows</value></data>
   <data name="ThemeLight" xml:space="preserve"><value>浅色</value></data>
@@ -30,7 +30,8 @@
   <data name="LanguageKorean" xml:space="preserve"><value>한국어</value></data>
   <data name="OpenLogs" xml:space="preserve"><value>打开日志</value></data>
   <data name="OpenConfig" xml:space="preserve"><value>打开配置文件夹</value></data>
-  <data name="ClearSession" xml:space="preserve"><value>清除 WebView2 登录会话</value></data>
+  <data name="ClearSession" xml:space="preserve"><value>清除 WebView2 登录会话...</value></data>
+  <data name="ToolsAndHelp" xml:space="preserve"><value>工具与帮助</value></data>
   <data name="Help" xml:space="preserve"><value>帮助</value></data>
   <data name="About" xml:space="preserve"><value>关于</value></data>
   <data name="Exit" xml:space="preserve"><value>退出</value></data>

@@ -72,6 +72,10 @@ namespace CodexUsageTrayLite.Tests
                 {
                     return RunWebViewEmailProbe();
                 }
+                if (args.Length >= 2 && args[0] == "--render-menu-r1")
+                {
+                    return RenderMenuR1(args[1]);
+                }
                 return RunAllAsync().GetAwaiter().GetResult();
             }
             catch (Exception ex)
@@ -163,6 +167,7 @@ namespace CodexUsageTrayLite.Tests
             await TestAsync("RefreshConcurrency", RefreshConcurrency);
             await TestAsync("RefreshCancellation", RefreshCancellation);
             await TestAsync("RepeatedRefreshLifecycle100", RepeatedRefreshLifecycle100);
+            Test("TrayMenuReorganizationAndTheme", TrayMenuReorganizationAndTheme);
             Test("GdiIconLifecycle", GdiIconLifecycle);
             Test("ThemeControlApplication", ThemeControlApplication);
             Test("ProxyDialogLayoutAndDirectOption", ProxyDialogLayoutAndDirectOption);
@@ -1239,6 +1244,191 @@ namespace CodexUsageTrayLite.Tests
             Equal(AppLanguage.Korean, versionFour.language);
         }
 
+        private static void TrayMenuReorganizationAndTheme()
+        {
+            var settings = CreateMenuTestSettings(AppLanguage.English, AppThemeMode.Dark, UsageSource.WebView2);
+            var fullEmail = "long.account.name.for.menu.validation+windows11@example.test";
+            using (var context = new TrayApplicationContext(settings, false))
+            {
+                context.SetAccountEmailForTesting(fullEmail, UsageSource.WebView2);
+                var menu = context.MenuForTesting;
+                var topLevelNames = new List<string>();
+                foreach (ToolStripItem item in menu.Items)
+                {
+                    if (!(item is ToolStripSeparator)) topLevelNames.Add(item.Name);
+                }
+                Equal(15, topLevelNames.Count);
+                Equal(string.Join("|", new[]
+                {
+                    "AccountSummary", "FiveHourUsage", "WeeklyUsage", "UsageResets", "LastUpdated",
+                    "RefreshNow", "OpenLogin", "UsageSource", "RefreshInterval", "IconStyle", "Theme",
+                    "Language", "StartAtLogin", "ToolsAndHelp", "Exit"
+                }), string.Join("|", topLevelNames));
+
+                var account = (TrayMenuItem)menu.Items["AccountSummary"];
+                var fiveHour = (TrayMenuItem)menu.Items["FiveHourUsage"];
+                var weekly = (TrayMenuItem)menu.Items["WeeklyUsage"];
+                var resets = (TrayMenuItem)menu.Items["UsageResets"];
+                var lastUpdated = (TrayMenuItem)menu.Items["LastUpdated"];
+                True(!account.Enabled, "Account summary must remain read-only.");
+                Equal(fullEmail, account.Text);
+                Equal("Plus", account.SummaryText);
+                True(account.ToolTipText.Contains(fullEmail), "Full email is not available from the account row tooltip.");
+                Equal(TrayMenuTextRole.PrimaryStatus, account.TextRole);
+                Equal(TrayMenuTextRole.PrimaryStatus, fiveHour.TextRole);
+                Equal(TrayMenuTextRole.PrimaryStatus, weekly.TextRole);
+                Equal(TrayMenuTextRole.SecondaryStatus, resets.TextRole);
+                Equal(TrayMenuTextRole.SecondaryStatus, lastUpdated.TextRole);
+
+                var dark = ThemeService.GetPalette(AppThemeMode.Dark);
+                Equal(dark.Text, ThemeService.MenuItemTextColor(account, dark));
+                Equal(dark.MutedText, ThemeService.MenuItemTextColor(resets, dark));
+                var normalDisabled = new TrayMenuItem("disabled") { Enabled = false };
+                Equal(dark.MutedText, ThemeService.MenuItemTextColor(normalDisabled, dark));
+
+                var sourceMenu = (TrayMenuItem)menu.Items["UsageSource"];
+                var intervalMenu = (TrayMenuItem)menu.Items["RefreshInterval"];
+                var iconMenu = (TrayMenuItem)menu.Items["IconStyle"];
+                var themeMenu = (TrayMenuItem)menu.Items["Theme"];
+                var languageMenu = (TrayMenuItem)menu.Items["Language"];
+                Equal("WebView2", sourceMenu.SummaryText);
+                Equal("5 minutes", intervalMenu.SummaryText);
+                Equal("Side by Side", iconMenu.SummaryText);
+                Equal("Dark", themeMenu.SummaryText);
+                Equal("English", languageMenu.SummaryText);
+                foreach (var summaryItem in new[] { sourceMenu, intervalMenu, iconMenu, themeMenu, languageMenu })
+                {
+                    Equal(Keys.None, summaryItem.ShortcutKeys);
+                    True(summaryItem.ShowShortcutKeys, summaryItem.Name + " summary is not participating in native menu layout.");
+                }
+
+                Equal(6, sourceMenu.DropDownItems.Count);
+                True(sourceMenu.DropDownItems["ProxySettings"].Available, "WebView2 proxy item is hidden.");
+                True(sourceMenu.DropDownItems["ClearSession"].Available, "WebView2 clear-session item is hidden.");
+                var toolsMenu = (ToolStripMenuItem)menu.Items["ToolsAndHelp"];
+                Equal(5, toolsMenu.DropDownItems.Count);
+                Equal("OpenLogs|OpenConfig||Help|About", JoinMenuNames(toolsMenu.DropDownItems));
+
+                settings.usageSource = UsageSource.CodexCli;
+                context.RefreshMenuForTesting();
+                Equal("Codex CLI", sourceMenu.SummaryText);
+                Equal("Codex CLI login help", menu.Items["OpenLogin"].Text);
+                True(lastUpdated.Text.Contains("(WebView2)"), "Selected source overwrote the last successful source.");
+                True(!sourceMenu.DropDownItems["ProxySettings"].Available, "CLI mode retained the proxy item.");
+                True(!sourceMenu.DropDownItems["ClearSession"].Available, "CLI mode retained the clear-session item.");
+                Equal(2, CountAvailableNonSeparatorItems(sourceMenu.DropDownItems));
+
+                TrayApplicationContext.ApplyMenuWorkingAreaLimit(menu, new Rectangle(0, 0, 320, 480));
+                Equal(new Size(304, 464), menu.MaximumSize);
+            }
+        }
+
+        private static int RenderMenuR1(string outputDirectory)
+        {
+            Directory.CreateDirectory(outputDirectory);
+            RenderMenuR1Variant(outputDirectory, AppLanguage.English, AppThemeMode.Light, UsageSource.WebView2, "en-light", false);
+            RenderMenuR1Variant(outputDirectory, AppLanguage.English, AppThemeMode.Dark, UsageSource.WebView2, "en-dark", false);
+            RenderMenuR1Variant(outputDirectory, AppLanguage.ChineseSimplified, AppThemeMode.Light, UsageSource.WebView2, "zh-cn-light", false);
+            RenderMenuR1Variant(outputDirectory, AppLanguage.ChineseSimplified, AppThemeMode.Dark, UsageSource.WebView2, "zh-cn-dark", false);
+            RenderMenuR1Variant(outputDirectory, AppLanguage.English, AppThemeMode.Dark, UsageSource.CodexCli, "en-dark-cli", false);
+            RenderMenuR1Variant(outputDirectory, AppLanguage.ChineseSimplified, AppThemeMode.Light, UsageSource.CodexCli, "zh-cn-light-cli", false);
+            RenderMenuR1Variant(outputDirectory, AppLanguage.English, AppThemeMode.Dark, UsageSource.WebView2, "en-dark-long-email-150pct", true);
+            Console.WriteLine("Rendered production WinForms menu previews to " + Path.GetFullPath(outputDirectory));
+            return 0;
+        }
+
+        private static void RenderMenuR1Variant(string outputDirectory, AppLanguage language, AppThemeMode theme, UsageSource source, string fileStem, bool scaledLongEmail)
+        {
+            var settings = CreateMenuTestSettings(language, theme, source);
+            settings.lastSuccessfulUsageSource = source;
+            using (var context = new TrayApplicationContext(settings, false))
+            {
+                var email = scaledLongEmail
+                    ? "very.long.account.name.for.screen.boundary.and.dpi.validation+cutl@example.test"
+                    : "demo@example.com";
+                context.SetAccountEmailForTesting(email, source);
+                var menu = context.MenuForTesting;
+                if (scaledLongEmail)
+                {
+                    menu.Font = new Font(menu.Font.FontFamily, menu.Font.Size * 1.5F, menu.Font.Style, GraphicsUnit.Point);
+                    ThemeService.ApplyToMenu(menu, theme);
+                    context.RefreshMenuForTesting();
+                }
+                SaveToolStripBitmap(menu, Path.Combine(outputDirectory, fileStem + "-main.png"));
+                SaveToolStripBitmap(((ToolStripMenuItem)menu.Items["UsageSource"]).DropDown,
+                    Path.Combine(outputDirectory, fileStem + "-source.png"));
+                SaveToolStripBitmap(((ToolStripMenuItem)menu.Items["ToolsAndHelp"]).DropDown,
+                    Path.Combine(outputDirectory, fileStem + "-tools.png"));
+                SaveToolStripBitmap(((ToolStripMenuItem)menu.Items["IconStyle"]).DropDown,
+                    Path.Combine(outputDirectory, fileStem + "-style.png"));
+            }
+        }
+
+        private static void SaveToolStripBitmap(ToolStrip toolStrip, string path)
+        {
+            toolStrip.AutoSize = true;
+            toolStrip.PerformLayout();
+            var size = toolStrip.GetPreferredSize(Size.Empty);
+            size.Width = Math.Max(1, size.Width);
+            size.Height = Math.Max(1, size.Height);
+            toolStrip.AutoSize = false;
+            toolStrip.Size = size;
+            using (var bitmap = new Bitmap(size.Width, size.Height, PixelFormat.Format32bppArgb))
+            {
+                toolStrip.DrawToBitmap(bitmap, new Rectangle(Point.Empty, size));
+                bitmap.Save(path, ImageFormat.Png);
+            }
+            toolStrip.AutoSize = true;
+        }
+
+        private static AppSettings CreateMenuTestSettings(AppLanguage language, AppThemeMode theme, UsageSource source)
+        {
+            var fetched = new DateTime(2026, 9, 23, 12, 30, 0, DateTimeKind.Local);
+            return new AppSettings
+            {
+                settingsSchemaVersion = SettingsStore.CurrentSettingsSchemaVersion,
+                setupComplete = true,
+                usageSource = source,
+                lastSuccessfulUsageSource = UsageSource.WebView2,
+                refreshIntervalMinutes = 5,
+                proxyMode = ProxyMode.System,
+                proxyHost = "127.0.0.1",
+                proxyPort = 7890,
+                quotaIconMode = QuotaIconMode.SideBySide,
+                themeMode = theme,
+                language = language,
+                loginRequired = false,
+                lastSuccessfulUsage = new UsageSnapshot
+                {
+                    userLevel = UserLevel.Plus,
+                    fiveHourLimitApplies = true,
+                    fiveHourRemainingPercent = 71,
+                    weeklyRemainingPercent = 81,
+                    fiveHourResetAt = fetched.AddHours(3),
+                    weeklyResetAt = fetched.AddDays(6),
+                    availableUsageResetCount = 2,
+                    lastSuccessfulFetchAt = fetched
+                }
+            };
+        }
+
+        private static string JoinMenuNames(ToolStripItemCollection items)
+        {
+            var names = new List<string>();
+            foreach (ToolStripItem item in items) names.Add(item is ToolStripSeparator ? string.Empty : item.Name);
+            return string.Join("|", names);
+        }
+
+        private static int CountAvailableNonSeparatorItems(ToolStripItemCollection items)
+        {
+            var count = 0;
+            foreach (ToolStripItem item in items)
+            {
+                if (!(item is ToolStripSeparator) && item.Available) count++;
+            }
+            return count;
+        }
+
         private static void LocalizedTextContracts()
         {
             var english = UiText.For(AppLanguage.English);
@@ -1254,20 +1444,25 @@ namespace CodexUsageTrayLite.Tests
             Equal("Icon style", english.IconStyleMenu);
             Equal("5-Hour Only", english.IconStyleFiveHourOnly);
             Equal("Weekly Only", english.IconStyleWeeklyOnly);
-            Equal("Both (Default)", english.IconStyleBoth);
+            Equal("Stacked (Default)", english.IconStyleBoth);
             Equal("Side by Side", english.IconStyleSideBySide);
             Equal("图标样式", simplified.IconStyleMenu);
-            Equal("两者（默认）", simplified.IconStyleBoth);
+            Equal("上下双层（默认）", simplified.IconStyleBoth);
             Equal("并排双条", simplified.IconStyleSideBySide);
             Equal("圖示樣式", traditional.IconStyleMenu);
-            Equal("兩者（預設）", traditional.IconStyleBoth);
+            Equal("上下雙層（預設）", traditional.IconStyleBoth);
             Equal("並排雙條", traditional.IconStyleSideBySide);
             Equal("アイコン表示", japanese.IconStyleMenu);
-            Equal("両方（既定）", japanese.IconStyleBoth);
+            Equal("上下二段（既定）", japanese.IconStyleBoth);
             Equal("左右並列", japanese.IconStyleSideBySide);
             Equal("아이콘 표시", korean.IconStyleMenu);
-            Equal("둘 다(기본값)", korean.IconStyleBoth);
+            Equal("위아래 이중 막대(기본값)", korean.IconStyleBoth);
             Equal("나란히 표시", korean.IconStyleSideBySide);
+            Equal("Tools && Help", english.ToolsAndHelp);
+            Equal("工具与帮助", simplified.ToolsAndHelp);
+            Equal("工具與說明", traditional.ToolsAndHelp);
+            Equal("ツールとヘルプ", japanese.ToolsAndHelp);
+            Equal("도구 및 도움말", korean.ToolsAndHelp);
             Equal("邮箱账号：user@example.com", simplified.FormatAccountEmail("user@example.com"));
             Equal("用量重置：2 个", simplified.FormatUsageResets(2));
             Equal("用量重置：未知", simplified.FormatUsageResets(null));

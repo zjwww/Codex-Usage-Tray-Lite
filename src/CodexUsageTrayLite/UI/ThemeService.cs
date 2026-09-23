@@ -216,7 +216,7 @@ namespace CodexUsageTrayLite.UI
             foreach (ToolStripItem item in items)
             {
                 item.BackColor = palette.SurfaceBackground;
-                item.ForeColor = item.Enabled ? palette.Text : palette.MutedText;
+                item.ForeColor = MenuItemTextColor(item, palette);
                 var dropDownItem = item as ToolStripDropDownItem;
                 if (dropDownItem != null)
                 {
@@ -226,6 +226,17 @@ namespace CodexUsageTrayLite.UI
                     ApplyToolStripItems(dropDownItem.DropDownItems, palette);
                 }
             }
+        }
+
+        internal static Color MenuItemTextColor(ToolStripItem item, ThemePalette palette)
+        {
+            var trayItem = item as TrayMenuItem;
+            if (trayItem != null)
+            {
+                if (trayItem.TextRole == TrayMenuTextRole.PrimaryStatus) return palette.Text;
+                if (trayItem.TextRole == TrayMenuTextRole.SecondaryStatus) return palette.MutedText;
+            }
+            return item.Enabled ? palette.Text : palette.MutedText;
         }
 
         [DllImport("dwmapi.dll")]
@@ -273,8 +284,44 @@ namespace CodexUsageTrayLite.UI
 
             protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs args)
             {
-                args.TextColor = args.Item.Enabled ? palette.Text : palette.MutedText;
+                args.TextColor = MenuItemTextColor(args.Item, palette);
+                var trayItem = args.Item as TrayMenuItem;
+                if (trayItem != null && trayItem.TextRole != TrayMenuTextRole.Default)
+                {
+                    TextRenderer.DrawText(
+                        args.Graphics,
+                        trayItem.Text,
+                        trayItem.Font,
+                        args.TextRectangle,
+                        args.TextColor,
+                        TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.HidePrefix | TextFormatFlags.NoPadding);
+                    if (!string.IsNullOrEmpty(trayItem.SummaryText) && trayItem.Owner != null)
+                    {
+                        var statusSummaryRectangle = new Rectangle(
+                            args.TextRectangle.Left,
+                            args.TextRectangle.Top,
+                            Math.Max(0, trayItem.Owner.ClientRectangle.Right - 31 - args.TextRectangle.Left),
+                            args.TextRectangle.Height);
+                        TextRenderer.DrawText(
+                            args.Graphics,
+                            trayItem.SummaryText,
+                            trayItem.Font,
+                            statusSummaryRectangle,
+                            args.TextColor,
+                            TextFormatFlags.Right | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
+                    }
+                    return;
+                }
                 base.OnRenderItemText(args);
+                if (trayItem == null) return;
+                if (!trayItem.HasDropDownItems || string.IsNullOrEmpty(trayItem.SummaryText)) return;
+                TextRenderer.DrawText(
+                    args.Graphics,
+                    trayItem.SummaryText,
+                    trayItem.Font,
+                    args.TextRectangle,
+                    args.TextColor,
+                    TextFormatFlags.Right | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
             }
 
             protected override void OnRenderArrow(ToolStripArrowRenderEventArgs args)

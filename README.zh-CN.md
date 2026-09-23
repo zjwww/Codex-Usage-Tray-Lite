@@ -24,7 +24,7 @@ Codex Usage Tray Lite 是非官方的 Windows 便携式系统托盘工具，通�
 ## 主要功能
 
 - **两种数据源：**使用应用独立的 WebView2 浏览器登录，或使用已安装且通过 ChatGPT 登录的 Codex CLI。
-- **四种托盘样式：**仅 5 小时、仅每周、双额度（默认）、并排双条。双额度和并排双条模式在明确确认账户没有 5 小时额度时，使用完整边框显示每周额度。
+- **四种托盘样式：**仅 5 小时、仅每周、上下双层（默认）、并排双条。上下双层和并排双条模式在明确确认账户没有 5 小时额度时，使用完整边框显示每周额度。
 - **状态明确：**区分剩余额度、未知数据、需要登录、获取失败和不适用的 5 小时额度；不会把缺失值伪造为零。
 - **账户信息：**邮箱、支持识别的账户等级、额度、可用重置次数和最后更新时间。程序只读取重置次数，不会消耗重置机会。
 - **刷新控制：**支持手动刷新，以及 1、2、5、10、15、30、60 分钟间隔；默认 15 分钟。
@@ -48,7 +48,7 @@ Codex Usage Tray Lite 是非官方的 Windows 便携式系统托盘工具，通�
 
 ### 英文菜单
 
-![WebView2 模式下浅色和深色英文菜单](docs/images/menu-english.png)
+<img src="docs/images/menu-english-light.png" alt="英文菜单 — 浅色" width="251"> <img src="docs/images/menu-english-dark.png" alt="英文菜单 — 深色" width="251">
 
 菜单渲染图使用真实英文资源文本和程序的菜单渲染器，数据为示例。在 CLI 模式下，登录操作变为 **Codex CLI login help**，并隐藏 WebView2 代理和会话清理操作。
 
@@ -76,8 +76,8 @@ Windows 10 和 Windows on ARM 尚未作为目标环境验证。本程序不需�
 2. 解压前比对 SHA-256：
 
    ```powershell
-   Get-FileHash .\CodexUsageTrayLite-v0.2.16-win-x64.zip -Algorithm SHA256
-   Get-Content .\CodexUsageTrayLite-v0.2.16-win-x64.zip.sha256
+   Get-FileHash .\CodexUsageTrayLite-v0.2.18-win-x64.zip -Algorithm SHA256
+   Get-Content .\CodexUsageTrayLite-v0.2.18-win-x64.zip.sha256
    ```
 
 3. 将**整个 ZIP** 解压到固定目录，保留可执行文件旁的 DLL 和语言目录。不要直接在压缩包内运行。
@@ -113,7 +113,7 @@ dotnet build .\CodexUsageTrayLite.sln -c Release -p:Platform=x64 --no-restore
 & .\tests\CodexUsageTrayLite.Tests\bin\x64\Release\net48\CodexUsageTrayLite.Tests.exe
 ```
 
-v0.2.16 本地构建通过了 **88 项自动化测试**，覆盖解析器、设置、本地化、图标像素、进程清理和模拟资源生命周期；这不代表全部真实登录流程、代理环境、硬件 DPI 或 8–12 小时持续运行均已验证。参见[验证说明](TESTING.md)。
+v0.2.18 构建通过了 **89 项自动化测试**，覆盖解析器、设置、本地化、图标像素、进程清理和模拟资源生命周期；这不代表全部真实登录流程、代理环境、硬件 DPI 或 8–12 小时持续运行均已验证。参见[验证说明](TESTING.md)。
 
 ## 许可证与致谢
 

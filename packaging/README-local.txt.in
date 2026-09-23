@@ -12,7 +12,8 @@ Keep the runtimes, ja-JP, ko-KR, zh-CN, and zh-TW subfolders and all DLL/config
 files beside the EXE. The four language subfolders contain the compiled Japanese,
 Korean, and Chinese resources.
 See RELEASE_NOTES.md and CHANGELOG.md for the English release documentation.
-The complete Simplified Chinese editions are RELEASE_NOTES.zh-CN.md and
+For a complete Simplified Chinese package guide, start with README.zh-CN.txt.
+The Simplified Chinese release documents are RELEASE_NOTES.zh-CN.md and
 CHANGELOG.zh-CN.md.
 
 Usage source
@@ -39,9 +40,9 @@ remains 15 minutes; the shorter intervals are explicit opt-in choices.
 Icon style
 ----------
 Icon style, directly below Refresh interval, offers 5-Hour Only, Weekly Only,
-Both (Default), and Side by Side. The single checked choice is saved and
-restored; existing choices are preserved and new settings still default to Both.
-Both keeps the established overlay icon. Side by Side uses a gapless Weekly-left
+Stacked (Default), and Side by Side. The single checked choice is saved and
+restored; existing choices are preserved and new settings still default to
+Stacked. Stacked keeps the established overlay icon. Side by Side uses a gapless Weekly-left
 and 5-Hour-right pair of flat rectangles when both limits apply; when 5-Hour is
 authoritatively not applicable, Weekly expands across the complete inner frame.
 Ambiguous applicability remains Unknown. Weekly Only hides the 5-Hour layer.
@@ -54,7 +55,7 @@ keeps its separate existing treatment.
 After a successful refresh, the tooltip contains quota information only: a
 5-Hour line plus Weekly for an applicable dual-window account, including Plus,
 or Weekly alone for a detected Pro or authoritative Weekly-only account. Email and source
-tags are not added to the tooltip. The tray status rows are Email, User Level,
+tags are not added to the tooltip. The tray status rows are Email / User Level,
 5-Hour, Weekly, Usage resets, and Last updated. The 5-Hour menu row remains
 visible as N/A for Pro and Weekly-only accounts.
 
@@ -156,4 +157,4 @@ before public distribution. This build has no desktop Widget, Windows
 toast/balloon notification, telemetry, auto-update, installer, cloud backend,
 or credential extraction.
 
-Corresponding source: https://github.com/zjwww/Codex-Usage-Tray-Lite/tree/v0.2.16
+Corresponding source: https://github.com/zjwww/Codex-Usage-Tray-Lite/tree/v{{VERSION}}

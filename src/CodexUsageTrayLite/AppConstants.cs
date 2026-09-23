@@ -4,7 +4,7 @@ namespace CodexUsageTrayLite
     {
         public const string Name = "Codex Usage Tray Lite";
         public const string AssemblyName = "CodexUsageTrayLite";
-        public const string Version = "0.2.16";
+        public const string Version = "0.2.18";
         public const string BaselineTag = "v2.0.0-preview.7";
         public const string BaselineCommit = "36e9679164dcd7e5ef23d1f35822664785fad01f";
         public const string UpstreamUrl = "https://github.com/saveway/codex-usage-monitor";

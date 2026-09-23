@@ -24,7 +24,7 @@ It is not developed, endorsed, or supported by OpenAI. OpenAI, ChatGPT, and Code
 ## Main features
 
 - **Two usage sources:** sign in through an app-specific WebView2 browser, or use an installed Codex CLI already signed in with ChatGPT.
-- **Four tray styles:** 5-Hour Only, Weekly Only, Both (Default), and Side by Side. Weekly fills the complete frame when the account authoritatively has no 5-Hour quota in Both or Side by Side.
+- **Four tray styles:** 5-Hour Only, Weekly Only, Stacked (Default), and Side by Side. Weekly fills the complete frame when the account authoritatively has no 5-Hour quota in Stacked or Side by Side.
 - **Clear states:** distinguish remaining quota, unknown data, login required, fetch errors, and an inapplicable 5-Hour window. Missing values are never invented as zero.
 - **Account details:** email, supported account level, quotas, available usage resets, and last update. The app only reads reset availability; it never consumes a reset.
 - **Refresh controls:** manual refresh and intervals of 1, 2, 5, 10, 15, 30, or 60 minutes; the default is 15 minutes.
@@ -48,7 +48,7 @@ Weekly uses green above 50%, orange at 21–50%, and red at 0–20%. In dual-quo
 
 ### English menu
 
-![English WebView2 menu in Light and Dark themes](docs/images/menu-english.png)
+<img src="docs/images/menu-english-light.png" alt="English menu — Light" width="251"> <img src="docs/images/menu-english-dark.png" alt="English menu — Dark" width="251">
 
 The menu rendering uses real English resource labels and the application menu renderer with sample data. In CLI mode, the login action becomes **Codex CLI login help**, and WebView2 proxy/session actions are hidden.
 
@@ -76,8 +76,8 @@ Windows 10 and Windows on ARM are not validated targets. Python, Playwright, and
 2. Compare the SHA-256 hash before extracting:
 
    ```powershell
-   Get-FileHash .\CodexUsageTrayLite-v0.2.16-win-x64.zip -Algorithm SHA256
-   Get-Content .\CodexUsageTrayLite-v0.2.16-win-x64.zip.sha256
+   Get-FileHash .\CodexUsageTrayLite-v0.2.18-win-x64.zip -Algorithm SHA256
+   Get-Content .\CodexUsageTrayLite-v0.2.18-win-x64.zip.sha256
    ```
 
 3. Extract the **entire ZIP** into a permanent folder. Keep the DLLs and language folders beside the executable. Do not run from inside the ZIP.
@@ -113,7 +113,7 @@ dotnet build .\CodexUsageTrayLite.sln -c Release -p:Platform=x64 --no-restore
 & .\tests\CodexUsageTrayLite.Tests\bin\x64\Release\net48\CodexUsageTrayLite.Tests.exe
 ```
 
-The v0.2.16 local build passed **88 automated tests**. This covers parsers, settings, localization, renderer pixels, process cleanup, and simulated resource lifecycles; it is not proof of every authenticated browser flow, proxy setup, hardware DPI, or an 8–12 hour soak. See [validation details](TESTING.md).
+The v0.2.18 build passed **89 automated tests**. This covers parsers, settings, localization, renderer pixels, process cleanup, and simulated resource lifecycles; it is not proof of every authenticated browser flow, proxy setup, hardware DPI, or an 8–12 hour soak. See [validation details](TESTING.md).
 
 ## License and acknowledgments
 

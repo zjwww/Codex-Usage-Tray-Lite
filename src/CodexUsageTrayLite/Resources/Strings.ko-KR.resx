@@ -14,10 +14,10 @@
   <data name="IconStyleMenu" xml:space="preserve"><value>아이콘 표시</value></data>
   <data name="IconStyleFiveHourOnly" xml:space="preserve"><value>5-Hour만</value></data>
   <data name="IconStyleWeeklyOnly" xml:space="preserve"><value>Weekly만</value></data>
-  <data name="IconStyleBoth" xml:space="preserve"><value>둘 다(기본값)</value></data>
+  <data name="IconStyleBoth" xml:space="preserve"><value>위아래 이중 막대(기본값)</value></data>
   <data name="IconStyleSideBySide" xml:space="preserve"><value>나란히 표시</value></data>
   <data name="StartAtLogin" xml:space="preserve"><value>로그인 시 시작</value></data>
-  <data name="ProxySettings" xml:space="preserve"><value>프록시 설정 (WebView2)</value></data>
+  <data name="ProxySettings" xml:space="preserve"><value>프록시 설정...</value></data>
   <data name="Theme" xml:space="preserve"><value>테마</value></data>
   <data name="ThemeFollowWindows" xml:space="preserve"><value>Windows 설정 따르기</value></data>
   <data name="ThemeLight" xml:space="preserve"><value>라이트</value></data>
@@ -30,7 +30,8 @@
   <data name="LanguageKorean" xml:space="preserve"><value>한국어</value></data>
   <data name="OpenLogs" xml:space="preserve"><value>로그 열기</value></data>
   <data name="OpenConfig" xml:space="preserve"><value>설정 폴더 열기</value></data>
-  <data name="ClearSession" xml:space="preserve"><value>WebView2 로그인 세션 지우기</value></data>
+  <data name="ClearSession" xml:space="preserve"><value>WebView2 로그인 세션 지우기...</value></data>
+  <data name="ToolsAndHelp" xml:space="preserve"><value>도구 및 도움말</value></data>
   <data name="Help" xml:space="preserve"><value>도움말</value></data>
   <data name="About" xml:space="preserve"><value>정보</value></data>
   <data name="Exit" xml:space="preserve"><value>종료</value></data>

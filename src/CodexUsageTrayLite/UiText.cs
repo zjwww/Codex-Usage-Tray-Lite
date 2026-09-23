@@ -67,6 +67,7 @@ namespace CodexUsageTrayLite
         public string OpenLogs { get { return Get("OpenLogs"); } }
         public string OpenConfig { get { return Get("OpenConfig"); } }
         public string ClearSession { get { return Get("ClearSession"); } }
+        public string ToolsAndHelp { get { return Get("ToolsAndHelp"); } }
         public string Help { get { return Get("Help"); } }
         public string About { get { return Get("About"); } }
         public string Exit { get { return Get("Exit"); } }

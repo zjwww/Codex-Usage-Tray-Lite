@@ -17,8 +17,7 @@ namespace CodexUsageTrayLite
     {
         private readonly NotifyIcon notifyIcon;
         private readonly ContextMenuStrip menu;
-        private readonly ToolStripMenuItem accountEmailItem;
-        private readonly ToolStripMenuItem userLevelItem;
+        private readonly TrayMenuItem accountSummaryItem;
         private readonly ToolStripMenuItem fiveHourUsageItem;
         private readonly ToolStripMenuItem weeklyUsageItem;
         private readonly ToolStripMenuItem usageResetsItem;
@@ -28,6 +27,8 @@ namespace CodexUsageTrayLite
         private readonly ToolStripMenuItem openLoginItem;
         private readonly ToolStripMenuItem proxySettingsItem;
         private readonly ToolStripMenuItem clearSessionItem;
+        private readonly ToolStripSeparator usageSourceMaintenanceSeparator;
+        private readonly ToolStripSeparator usageSourceClearSeparator;
         private readonly ToolStripMenuItem usageSourceMenuItem;
         private readonly ToolStripMenuItem refreshIntervalMenuItem;
         private readonly ToolStripMenuItem quotaIconModeMenuItem;
@@ -37,6 +38,7 @@ namespace CodexUsageTrayLite
         private readonly ToolStripMenuItem openConfigItem;
         private readonly ToolStripMenuItem helpItem;
         private readonly ToolStripMenuItem aboutItem;
+        private readonly ToolStripMenuItem toolsAndHelpMenuItem;
         private readonly ToolStripMenuItem exitItem;
         private readonly Dictionary<int, ToolStripMenuItem> intervalItems = new Dictionary<int, ToolStripMenuItem>();
         private readonly Dictionary<QuotaIconMode, ToolStripMenuItem> quotaIconModeItems = new Dictionary<QuotaIconMode, ToolStripMenuItem>();
@@ -48,6 +50,7 @@ namespace CodexUsageTrayLite
         private readonly BatteryTrayIconRenderer iconRenderer;
         private readonly UsageFetchService fetchService;
         private readonly CancellationTokenSource applicationCancellation = new CancellationTokenSource();
+        private readonly bool runtimeActive;
         private AppSettings settings;
         private UiText ui;
         private LoginBrowserForm loginForm;
@@ -61,8 +64,14 @@ namespace CodexUsageTrayLite
         private UsageSource? currentAccountEmailSource;
 
         public TrayApplicationContext()
+            : this(null, true)
         {
-            settings = SettingsStore.Load();
+        }
+
+        internal TrayApplicationContext(AppSettings initialSettings, bool showNotifyIcon)
+        {
+            runtimeActive = showNotifyIcon;
+            settings = initialSettings == null ? SettingsStore.Load() : SettingsStore.Normalize(initialSettings);
             ui = UiText.For(settings.language);
             iconRenderer = new BatteryTrayIconRenderer();
             fetchService = new UsageFetchService();
@@ -71,53 +80,67 @@ namespace CodexUsageTrayLite
                 : settings.lastSuccessfulUsage == null ? TrayVisualState.Unknown : TrayVisualState.Normal;
             showingCachedData = settings.lastSuccessfulUsage != null;
 
-            menu = new ContextMenuStrip();
-            accountEmailItem = AddMenu(ui.FormatAccountEmail(null), null);
-            accountEmailItem.Enabled = false;
-            userLevelItem = AddMenu(ui.FormatUserLevel(UserLevel.Unknown), null);
-            userLevelItem.Enabled = false;
-            fiveHourUsageItem = AddMenu(TooltipFormatter.BuildFiveHourMenuLine(null), null);
+            menu = new ContextMenuStrip { ShowItemToolTips = true };
+            accountSummaryItem = AddStatusMenu("--", TrayMenuTextRole.PrimaryStatus, "AccountSummary");
+            fiveHourUsageItem = AddStatusMenu(TooltipFormatter.BuildFiveHourMenuLine(null), TrayMenuTextRole.PrimaryStatus, "FiveHourUsage");
             fiveHourUsageItem.Enabled = false;
-            weeklyUsageItem = AddMenu(TooltipFormatter.BuildWeeklyMenuLine(null, visualState, showingCachedData), null);
+            weeklyUsageItem = AddStatusMenu(TooltipFormatter.BuildWeeklyMenuLine(null, visualState, showingCachedData), TrayMenuTextRole.PrimaryStatus, "WeeklyUsage");
             weeklyUsageItem.Enabled = false;
-            usageResetsItem = AddMenu(ui.FormatUsageResets(null), null);
+            usageResetsItem = AddStatusMenu(ui.FormatUsageResets(null), TrayMenuTextRole.SecondaryStatus, "UsageResets");
             usageResetsItem.Enabled = false;
-            lastUpdatedItem = AddMenu(ui.FormatLastUpdated(null, settings.lastSuccessfulUsageSource), null);
+            lastUpdatedItem = AddStatusMenu(ui.FormatLastUpdated(null, settings.lastSuccessfulUsageSource), TrayMenuTextRole.SecondaryStatus, "LastUpdated");
             lastUpdatedItem.Enabled = false;
             menu.Items.Add(new ToolStripSeparator());
 
-            refreshNowItem = AddMenu(ui.RefreshNow, (sender, args) => StartRefresh(true));
-            openLoginItem = AddMenu(ui.OpenLogin, async (sender, args) => await HandleOpenLoginAsync());
+            refreshNowItem = AddMenu(ui.RefreshNow, (sender, args) => StartRefresh(true), "RefreshNow");
+            openLoginItem = AddMenu(ui.OpenLogin, async (sender, args) => await HandleOpenLoginAsync(), "OpenLogin");
             menu.Items.Add(new ToolStripSeparator());
 
             usageSourceMenuItem = CreateUsageSourceMenu();
             menu.Items.Add(usageSourceMenuItem);
+            usageSourceMaintenanceSeparator = new ToolStripSeparator();
+            usageSourceMenuItem.DropDownItems.Add(usageSourceMaintenanceSeparator);
+            proxySettingsItem = CreateMenuItem(ui.ProxySettings, async (sender, args) => await OpenProxySettingsAsync(), "ProxySettings");
+            usageSourceMenuItem.DropDownItems.Add(proxySettingsItem);
+            usageSourceClearSeparator = new ToolStripSeparator();
+            usageSourceMenuItem.DropDownItems.Add(usageSourceClearSeparator);
+            clearSessionItem = CreateMenuItem(ui.ClearSession, async (sender, args) => await ClearLoginSessionAsync(), "ClearSession");
+            usageSourceMenuItem.DropDownItems.Add(clearSessionItem);
             refreshIntervalMenuItem = CreateIntervalMenu();
             menu.Items.Add(refreshIntervalMenuItem);
-            quotaIconModeMenuItem = CreateQuotaIconModeMenu();
-            menu.Items.Add(quotaIconModeMenuItem);
-            proxySettingsItem = AddMenu(ui.ProxySettings, async (sender, args) => await OpenProxySettingsAsync());
-            clearSessionItem = AddMenu(ui.ClearSession, async (sender, args) => await ClearLoginSessionAsync());
             menu.Items.Add(new ToolStripSeparator());
 
-            startAtLoginItem = AddMenu(ui.StartAtLogin, HandleStartAtLogin);
-            startAtLoginItem.CheckOnClick = false;
+            quotaIconModeMenuItem = CreateQuotaIconModeMenu();
+            menu.Items.Add(quotaIconModeMenuItem);
             themeMenuItem = CreateThemeMenu();
             menu.Items.Add(themeMenuItem);
             languageMenuItem = CreateLanguageMenu();
             menu.Items.Add(languageMenuItem);
+            startAtLoginItem = AddMenu(ui.StartAtLogin, HandleStartAtLogin, "StartAtLogin");
+            startAtLoginItem.CheckOnClick = false;
             menu.Items.Add(new ToolStripSeparator());
 
-            openLogsItem = AddMenu(ui.OpenLogs, (sender, args) => OpenLogFile());
-            openConfigItem = AddMenu(ui.OpenConfig, (sender, args) => OpenFolder(AppPaths.DataDirectory));
-            helpItem = AddMenu(ui.Help, (sender, args) => ShowHelp());
-            aboutItem = AddMenu(ui.About, (sender, args) => ShowAbout());
+            toolsAndHelpMenuItem = new TrayMenuItem(ui.ToolsAndHelp) { Name = "ToolsAndHelp" };
+            openLogsItem = CreateMenuItem(ui.OpenLogs, (sender, args) => OpenLogFile(), "OpenLogs");
+            openConfigItem = CreateMenuItem(ui.OpenConfig, (sender, args) => OpenFolder(AppPaths.DataDirectory), "OpenConfig");
+            helpItem = CreateMenuItem(ui.Help, (sender, args) => ShowHelp(), "Help");
+            aboutItem = CreateMenuItem(ui.About, (sender, args) => ShowAbout(), "About");
+            toolsAndHelpMenuItem.DropDownItems.Add(openLogsItem);
+            toolsAndHelpMenuItem.DropDownItems.Add(openConfigItem);
+            toolsAndHelpMenuItem.DropDownItems.Add(new ToolStripSeparator());
+            toolsAndHelpMenuItem.DropDownItems.Add(helpItem);
+            toolsAndHelpMenuItem.DropDownItems.Add(aboutItem);
+            menu.Items.Add(toolsAndHelpMenuItem);
             menu.Items.Add(new ToolStripSeparator());
 
-            exitItem = AddMenu(ui.Exit, async (sender, args) => await ExitApplicationAsync());
+            exitItem = AddMenu(ui.Exit, async (sender, args) => await ExitApplicationAsync(), "Exit");
             ApplyLanguage(settings.language, false);
             ApplyTheme(settings.themeMode, false);
-            menu.Opening += (sender, args) => RefreshMenuState();
+            menu.Opening += (sender, args) =>
+            {
+                ApplyMenuWorkingAreaLimit(menu, Screen.FromPoint(Cursor.Position).WorkingArea);
+                RefreshMenuState();
+            };
 
             notifyIcon = new NotifyIcon
             {
@@ -136,11 +159,14 @@ namespace CodexUsageTrayLite
             };
             ApplyRefreshInterval(settings.refreshIntervalMinutes, false);
             UpdateDisplay();
-            notifyIcon.Visible = true;
-            var themeDispatchHandle = menu.Handle;
-            Microsoft.Win32.SystemEvents.UserPreferenceChanged += HandleVisualPreferenceChanged;
-            Microsoft.Win32.SystemEvents.DisplaySettingsChanged += HandleDisplaySettingsChanged;
-            if (settings.CanRefreshUsage()) startupTimer.Start();
+            notifyIcon.Visible = showNotifyIcon;
+            if (showNotifyIcon)
+            {
+                var themeDispatchHandle = menu.Handle;
+                Microsoft.Win32.SystemEvents.UserPreferenceChanged += HandleVisualPreferenceChanged;
+                Microsoft.Win32.SystemEvents.DisplaySettingsChanged += HandleDisplaySettingsChanged;
+                if (settings.CanRefreshUsage()) startupTimer.Start();
+            }
         }
 
         protected override void ExitThreadCore()
@@ -186,21 +212,48 @@ namespace CodexUsageTrayLite
             base.Dispose();
         }
 
-        private ToolStripMenuItem AddMenu(string text, EventHandler handler)
+        internal ContextMenuStrip MenuForTesting { get { return menu; } }
+
+        internal void SetAccountEmailForTesting(string email, UsageSource source)
         {
-            var item = new ToolStripMenuItem(text);
-            if (handler != null) item.Click += handler;
+            currentAccountEmail = AccountEmailPrivacy.Normalize(email);
+            currentAccountEmailSource = source;
+            RefreshMenuState();
+        }
+
+        internal void RefreshMenuForTesting()
+        {
+            RefreshMenuState();
+        }
+
+        private ToolStripMenuItem AddMenu(string text, EventHandler handler, string name)
+        {
+            var item = CreateMenuItem(text, handler, name);
             menu.Items.Add(item);
+            return item;
+        }
+
+        private TrayMenuItem AddStatusMenu(string text, TrayMenuTextRole textRole, string name)
+        {
+            var item = new TrayMenuItem(text, textRole) { Enabled = false, Name = name };
+            menu.Items.Add(item);
+            return item;
+        }
+
+        private static ToolStripMenuItem CreateMenuItem(string text, EventHandler handler, string name)
+        {
+            var item = new TrayMenuItem(text) { Name = name };
+            if (handler != null) item.Click += handler;
             return item;
         }
 
         private ToolStripMenuItem CreateIntervalMenu()
         {
-            var parent = new ToolStripMenuItem(ui.RefreshInterval);
+            var parent = new TrayMenuItem(ui.RefreshInterval) { Name = "RefreshInterval" };
             foreach (var minutes in SettingsStore.AllowedRefreshIntervals)
             {
                 var localMinutes = minutes;
-                var item = new ToolStripMenuItem(ui.FormatMinutes(minutes));
+                var item = new TrayMenuItem(ui.FormatMinutes(minutes)) { Name = "RefreshInterval" + minutes.ToString(CultureInfo.InvariantCulture) };
                 item.Click += (sender, args) => ApplyRefreshInterval(localMinutes, true);
                 intervalItems.Add(minutes, item);
                 parent.DropDownItems.Add(item);
@@ -210,7 +263,7 @@ namespace CodexUsageTrayLite
 
         private ToolStripMenuItem CreateThemeMenu()
         {
-            var parent = new ToolStripMenuItem(ui.Theme);
+            var parent = new TrayMenuItem(ui.Theme) { Name = "Theme" };
             AddThemeItem(parent, AppThemeMode.System, ui.ThemeFollowWindows);
             AddThemeItem(parent, AppThemeMode.Light, ui.ThemeLight);
             AddThemeItem(parent, AppThemeMode.Dark, ui.ThemeDark);
@@ -219,7 +272,7 @@ namespace CodexUsageTrayLite
 
         private ToolStripMenuItem CreateQuotaIconModeMenu()
         {
-            var parent = new ToolStripMenuItem(ui.IconStyleMenu);
+            var parent = new TrayMenuItem(ui.IconStyleMenu) { Name = "IconStyle" };
             AddQuotaIconModeItem(parent, QuotaIconMode.FiveHourOnly, ui.IconStyleFiveHourOnly);
             AddQuotaIconModeItem(parent, QuotaIconMode.WeeklyOnly, ui.IconStyleWeeklyOnly);
             AddQuotaIconModeItem(parent, QuotaIconMode.Both, ui.IconStyleBoth);
@@ -229,7 +282,7 @@ namespace CodexUsageTrayLite
 
         private ToolStripMenuItem CreateLanguageMenu()
         {
-            var parent = new ToolStripMenuItem(ui.LanguageMenu);
+            var parent = new TrayMenuItem(ui.LanguageMenu) { Name = "Language" };
             AddLanguageItem(parent, AppLanguage.English, ui.LanguageEnglish);
             AddLanguageItem(parent, AppLanguage.ChineseSimplified, ui.LanguageChineseSimplified);
             AddLanguageItem(parent, AppLanguage.ChineseTraditional, ui.LanguageChineseTraditional);
@@ -240,7 +293,7 @@ namespace CodexUsageTrayLite
 
         private ToolStripMenuItem CreateUsageSourceMenu()
         {
-            var parent = new ToolStripMenuItem(ui.UsageSourceMenu);
+            var parent = new TrayMenuItem(ui.UsageSourceMenu) { Name = "UsageSource" };
             AddUsageSourceItem(parent, UsageSource.WebView2, ui.UsageSourceWebView2);
             AddUsageSourceItem(parent, UsageSource.CodexCli, ui.UsageSourceCodexCli);
             return parent;
@@ -249,7 +302,7 @@ namespace CodexUsageTrayLite
         private void AddUsageSourceItem(ToolStripMenuItem parent, UsageSource source, string text)
         {
             var localSource = source;
-            var item = new ToolStripMenuItem(text);
+            var item = new TrayMenuItem(text) { Name = "UsageSource" + source.ToString() };
             item.Click += async (sender, args) => await ApplyUsageSourceAsync(localSource);
             sourceItems.Add(source, item);
             parent.DropDownItems.Add(item);
@@ -258,7 +311,7 @@ namespace CodexUsageTrayLite
         private void AddThemeItem(ToolStripMenuItem parent, AppThemeMode mode, string text)
         {
             var localMode = mode;
-            var item = new ToolStripMenuItem(text);
+            var item = new TrayMenuItem(text) { Name = "Theme" + mode.ToString() };
             item.Click += (sender, args) => ApplyTheme(localMode, true);
             themeItems.Add(mode, item);
             parent.DropDownItems.Add(item);
@@ -267,7 +320,7 @@ namespace CodexUsageTrayLite
         private void AddQuotaIconModeItem(ToolStripMenuItem parent, QuotaIconMode mode, string text)
         {
             var localMode = mode;
-            var item = new ToolStripMenuItem(text);
+            var item = new TrayMenuItem(text) { Name = "IconStyle" + mode.ToString() };
             item.Click += (sender, args) => ApplyQuotaIconMode(localMode, true);
             quotaIconModeItems.Add(mode, item);
             parent.DropDownItems.Add(item);
@@ -276,7 +329,7 @@ namespace CodexUsageTrayLite
         private void AddLanguageItem(ToolStripMenuItem parent, AppLanguage language, string text)
         {
             var localLanguage = language;
-            var item = new ToolStripMenuItem(text);
+            var item = new TrayMenuItem(text) { Name = "Language" + language.ToString() };
             item.Click += (sender, args) => ApplyLanguage(localLanguage, true);
             languageItems.Add(language, item);
             parent.DropDownItems.Add(item);
@@ -295,6 +348,7 @@ namespace CodexUsageTrayLite
             startAtLoginItem.Text = ui.StartAtLogin;
             themeMenuItem.Text = ui.Theme;
             languageMenuItem.Text = ui.LanguageMenu;
+            toolsAndHelpMenuItem.Text = ui.ToolsAndHelp;
             openLogsItem.Text = ui.OpenLogs;
             openConfigItem.Text = ui.OpenConfig;
             helpItem.Text = ui.Help;
@@ -326,6 +380,7 @@ namespace CodexUsageTrayLite
             settings.themeMode = ThemeService.Normalize(mode);
             ThemeService.ApplyToMenu(menu, settings.themeMode);
             foreach (var pair in themeItems) pair.Value.Checked = pair.Key == settings.themeMode;
+            SetSummaryText(themeMenuItem, ThemeModeName(ui, settings.themeMode));
             if (loginForm != null && !loginForm.IsDisposed) loginForm.ApplyAppTheme(settings.themeMode);
             if (notifyIcon != null) UpdateTrayIcon();
             if (save)
@@ -356,6 +411,7 @@ namespace CodexUsageTrayLite
             refreshTimer.Interval = checked(minutes * 60 * 1000);
             UpdateRefreshTimer();
             foreach (var pair in intervalItems) pair.Value.Checked = pair.Key == minutes;
+            SetSummaryText(refreshIntervalMenuItem, ui.FormatMinutes(minutes));
             if (save) SaveSettingsSafely();
         }
 
@@ -651,9 +707,13 @@ namespace CodexUsageTrayLite
             }
             foreach (var pair in sourceItems) pair.Value.Checked = pair.Key == settings.usageSource;
             foreach (var pair in quotaIconModeItems) pair.Value.Checked = pair.Key == settings.quotaIconMode;
+            foreach (var pair in themeItems) pair.Value.Checked = pair.Key == settings.themeMode;
+            foreach (var pair in languageItems) pair.Value.Checked = pair.Key == settings.language;
             var snapshot = settings.lastSuccessfulUsage;
-            accountEmailItem.Text = ui.FormatAccountEmail(CurrentAccountEmail());
-            userLevelItem.Text = ui.FormatUserLevel(CurrentUserLevel());
+            var accountEmail = CurrentAccountEmail();
+            accountSummaryItem.Text = EscapeMenuText(accountEmail ?? "--");
+            accountSummaryItem.ToolTipText = ui.FormatAccountEmail(accountEmail) + Environment.NewLine + ui.FormatUserLevel(CurrentUserLevel());
+            accountSummaryItem.SummaryText = UserLevelHelper.DisplayName(CurrentUserLevel(), ui.Unknown);
             fiveHourUsageItem.Text = TooltipFormatter.BuildFiveHourMenuLine(snapshot);
             weeklyUsageItem.Text = TooltipFormatter.BuildWeeklyMenuLine(snapshot, visualState, showingCachedData);
             usageResetsItem.Text = ui.FormatUsageResets(CurrentAvailableUsageResetCount());
@@ -661,12 +721,64 @@ namespace CodexUsageTrayLite
             openLoginItem.Text = webViewSource ? ui.OpenLogin : ui.CodexCliLoginHelp;
             proxySettingsItem.Visible = ShouldShowWebViewOnlyMenuItems(settings.usageSource);
             clearSessionItem.Visible = ShouldShowWebViewOnlyMenuItems(settings.usageSource);
+            usageSourceMaintenanceSeparator.Visible = ShouldShowWebViewOnlyMenuItems(settings.usageSource);
+            usageSourceClearSeparator.Visible = ShouldShowWebViewOnlyMenuItems(settings.usageSource);
             proxySettingsItem.Enabled = webViewSource && !interactiveActionPending && !fetchService.IsBusy;
             clearSessionItem.Enabled = webViewSource && !interactiveActionPending && !fetchService.IsBusy;
             refreshNowItem.Enabled = settings.CanManuallyRefreshUsage() && !interactiveActionPending && !fetchService.IsBusy && (loginForm == null || loginForm.IsDisposed);
             lastUpdatedItem.Text = snapshot == null || snapshot.lastSuccessfulFetchAt == default(DateTime)
                 ? ui.FormatLastUpdated(null, settings.lastSuccessfulUsageSource)
                 : ui.FormatLastUpdated(snapshot.lastSuccessfulFetchAt, settings.lastSuccessfulUsageSource);
+            SetSummaryText(usageSourceMenuItem, ui.UsageSourceName(settings.usageSource));
+            SetSummaryText(refreshIntervalMenuItem, ui.FormatMinutes(settings.refreshIntervalMinutes));
+            SetSummaryText(quotaIconModeMenuItem, QuotaIconModeName(ui, settings.quotaIconMode));
+            SetSummaryText(themeMenuItem, ThemeModeName(ui, settings.themeMode));
+            SetSummaryText(languageMenuItem, LanguageName(ui, settings.language));
+        }
+
+        internal static void ApplyMenuWorkingAreaLimit(ContextMenuStrip targetMenu, System.Drawing.Rectangle workingArea)
+        {
+            if (targetMenu == null) throw new ArgumentNullException("targetMenu");
+            var width = Math.Max(240, workingArea.Width - 16);
+            var height = Math.Max(240, workingArea.Height - 16);
+            targetMenu.MaximumSize = new System.Drawing.Size(width, height);
+        }
+
+        internal static void SetSummaryText(ToolStripMenuItem item, string summary)
+        {
+            if (item == null) throw new ArgumentNullException("item");
+            var trayItem = item as TrayMenuItem;
+            if (trayItem == null) throw new ArgumentException("Summary items must use TrayMenuItem.", "item");
+            trayItem.SummaryText = summary;
+        }
+
+        internal static string QuotaIconModeName(UiText text, QuotaIconMode mode)
+        {
+            if (mode == QuotaIconMode.FiveHourOnly) return text.IconStyleFiveHourOnly;
+            if (mode == QuotaIconMode.WeeklyOnly) return text.IconStyleWeeklyOnly;
+            if (mode == QuotaIconMode.SideBySide) return text.IconStyleSideBySide;
+            return text.IconStyleBoth;
+        }
+
+        internal static string ThemeModeName(UiText text, AppThemeMode mode)
+        {
+            if (mode == AppThemeMode.Light) return text.ThemeLight;
+            if (mode == AppThemeMode.Dark) return text.ThemeDark;
+            return text.ThemeFollowWindows;
+        }
+
+        internal static string LanguageName(UiText text, AppLanguage language)
+        {
+            if (language == AppLanguage.ChineseSimplified) return text.LanguageChineseSimplified;
+            if (language == AppLanguage.ChineseTraditional) return text.LanguageChineseTraditional;
+            if (language == AppLanguage.Japanese) return text.LanguageJapanese;
+            if (language == AppLanguage.Korean) return text.LanguageKorean;
+            return text.LanguageEnglish;
+        }
+
+        internal static string EscapeMenuText(string value)
+        {
+            return (value ?? string.Empty).Replace("&", "&&");
         }
 
         internal static bool ShouldShowWebViewOnlyMenuItems(UsageSource source)
@@ -777,7 +889,7 @@ namespace CodexUsageTrayLite
         private void UpdateRefreshTimer()
         {
             refreshTimer.Stop();
-            if (!exiting && !interactiveActionPending && settings.CanRefreshUsage() &&
+            if (runtimeActive && !exiting && !interactiveActionPending && settings.CanRefreshUsage() &&
                 !fetchService.IsBusy && (loginForm == null || loginForm.IsDisposed))
             {
                 refreshTimer.Start();

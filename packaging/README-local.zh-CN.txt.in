@@ -1,0 +1,115 @@
+Codex Usage Tray Lite {{VERSION}}
+================================
+
+Windows x64 便携软件包。本项目是 saveway/codex-usage-monitor 的非官方社区衍生版本，
+基于 {{BASELINE_TAG}}（{{BASELINE_COMMIT}}）。
+许可证：GPL-3.0-only。详见 LICENSE.txt 和 THIRD_PARTY_NOTICES.md。
+
+运行
+----
+将整个 ZIP 解压到同一个文件夹，然后运行 CodexUsageTrayLite.exe。
+请保留 EXE 旁的 runtimes、ja-JP、ko-KR、zh-CN、zh-TW 子文件夹以及所有 DLL／配置文件。
+这四个语言子文件夹包含日语、韩语、简体中文和繁体中文的编译资源。
+英文完整说明见 README.txt、RELEASE_NOTES.md 和 CHANGELOG.md。
+简体中文发布说明与完整更新历史分别为 RELEASE_NOTES.zh-CN.md 和 CHANGELOG.zh-CN.md。
+
+用量来源
+--------
+托盘菜单的“用量来源”可选择 WebView2 或 Codex CLI，默认使用 WebView2。
+Codex CLI 模式要求本机已安装 Codex CLI，并已通过 ChatGPT 登录；如有需要可先运行
+“codex login”。本软件包不包含 Codex CLI、Node.js 或其凭据，也不会读取这些凭据。
+
+切换到任一来源时都会立即进行一次验证读取。切回 WebView2 时会复用已保存的独立登录资料；
+只有验证结果要求重新登录时才需要打开登录窗口。Codex CLI app-server 进程仅在读取用量期间运行，
+完成后即关闭。“立即刷新”可以重试缺失或未登录的 CLI；只有成功读取后才开始周期刷新。
+代理设置和“清除 WebView2 登录会话”仅适用于 WebView2。菜单中“关于”上方的“帮助”
+会简要说明两种来源模式以及本程序的安全与隐私边界。
+
+刷新间隔
+--------
+刷新间隔可选 1、2、5、10、15、30 和 60 分钟。默认仍为 15 分钟；较短间隔需要用户主动选择。
+
+图标样式
+--------
+“图标样式”位于“刷新间隔”下方，可选“仅 5-Hour”“仅 Weekly”“上下双层（默认）”和
+“并排双条”。单选结果会保存并在下次启动时恢复；已有选择保持不变，新设置默认使用上下双层。
+上下双层沿用既有叠加图标。并排双条在两种限制都适用时显示无间隙的左 Weekly／右 5-Hour
+平顶矩形；权威确认不适用 5-Hour 时，Weekly 会扩展到整个内框。适用性不明确时仍显示 Unknown。
+“仅 Weekly”隐藏 5-Hour 层；“仅 5-Hour”隐藏 Weekly。已确认只有 Weekly 的 Pro 数据会显示带
+“i”的空框，不会虚构额度。Unknown、错误和需要登录状态彼此区分。方框内的“i”“?”“L”使用
+尽量填满但不改变纵横比的红色加粗大字；错误斜线仍沿用原有样式。
+
+成功刷新后，Tooltip 只包含用量信息：仍适用双窗口的账号（包括 Plus）显示 5-Hour 和 Weekly；
+已检测为 Pro 或权威确认仅有 Weekly 的账号只显示 Weekly。Tooltip 不显示邮箱和来源标签。
+托盘状态行依次为“邮箱账号／用户等级”“5-Hour”“Weekly”“用量重置”和“上次更新”。
+Pro 及仅 Weekly 账号仍保留 5-Hour 菜单行，并显示 N/A。
+
+在“仅 5-Hour”模式下，Tooltip 只显示 5-Hour；已确认不可用时显示 `5-Hour N/A`。
+“仅 Weekly”和“上下双层”沿用上述 Tooltip 规则，不会根据可见图层再次过滤文字。
+
+CLI 从已记录的 account/read 响应读取邮箱和受支持的精确 Free／Go／Plus／Pro 等级。
+WebView2 使用同源会话请求，并以页面中精确匹配的账号徽标作为后备；可选查询不可用时，
+用量刷新仍可成功，但“用户等级”保持 Unknown。本版本暂不识别 Pro 5x／20x 变体。
+
+“用量重置”行显示所选来源返回的可用储备重置次数。CLI 从同一限额响应中读取。
+WebView2 接受明确的数字说明，或在正常桌面布局视口中短暂延迟检查 DOM，统计
+“Usage limit resets”区域内已启用的“Use reset”操作；每一条可操作记录计为一次重置。
+说明文字、禁用项、隐藏项和区域外文字都不会计数。缺失或来源已过期的数据显示 Unknown，
+不会当作 0；页面明确显示当前没有可用重置时才映射为 0。此数值不会加入 Tooltip。
+后台 WebView2 使用不可见、不会激活的宿主 HWND，因此周期刷新不会抢占前台或打断 Windows 屏保。
+
+外观
+----
+通过托盘菜单“主题”选择“跟随 Windows”“浅色”或“深色”。设置会应用到托盘菜单、代理、帮助、
+关于、登录窗口外框，以及 WebView2 的首选页面配色；单独的登录服务仍可能保留自己的网站主题。
+
+通过“语言”选择英语、简体中文、繁体中文、日语或韩语，界面会立即切换。全新安装会在适用时
+按 Windows UI 语言选择对应中文、日语或韩语，其他系统语言默认使用英语。已有安装会保留保存的
+语言选择。Tooltip 为保持紧凑，仍使用英文用量格式。
+
+EXE 与文件资源管理器默认使用浅色 Option C 代码用量图标。代理、帮助、关于和“登录／用量”
+标题栏会根据窗口实际配色选择对应的浅色或深色图标。明确指定浅色／深色时保持一致；
+“跟随 Windows”会同时根据当前 Windows 应用主题解析窗口和图标，已打开的相关对话框也会在
+Windows 外观变化后刷新。实时托盘图标仍为动态双用量表。程序提示框使用已本地化的按钮文字，
+同时保留熟悉的 Windows 状态图形和模态行为。
+
+系统要求
+--------
+- Windows 11 x64
+- .NET Framework 4.8 或更高版本
+- Microsoft Edge WebView2 Evergreen Runtime（WebView2 来源）
+- PATH 中可用且已运行“codex login”的 Codex CLI（Codex CLI 来源）
+
+Windows 11 通常已提供 .NET Framework 4.8 或更高版本，许多 Windows 11 安装也已包含
+WebView2 Runtime。这两个 Microsoft 系统组件不会嵌入此便携 ZIP；Codex CLI 同样不随包提供。
+缺少前置条件时程序会明确报告，不会静默安装。
+
+本地数据
+--------
+运行数据只会创建在：
+  %LOCALAPPDATA%\CodexUsageTrayLite
+
+完整账号邮箱只保留在进程内存中，不会写入设置或日志。日志使用结构化的
+level=info|warning|error 与 event 字段；成功读取身份时只记录固定格式的脱敏邮箱。
+“打开日志”还会记录不含用量数值的进程生命周期诊断。Codex CLI 日志会说明 stdin 关闭是否正常，
+或是否仅对本程序准确启动的进程使用了超时 Kill／Job 后备。WebView2 日志分别记录控制器 Close、
+意外进程失败详情，以及 Runtime 实际触发的 BrowserProcessExited 事件；本程序不会结束 WebView2 进程。
+
+Codex CLI 根进程正常退出后，后代进程最多有 500 毫秒自然退出时间，然后才对 Job Object 清理分类。
+“打开日志”通过 Windows 文件关联直接打开日志文件；“打开配置文件夹”仍打开应用数据目录。
+
+CodexUsageTrayLite.log 是当前本地日期的活动日志。跨过本地午夜后的首次写入前，上一天非空日志会
+归档为 CodexUsageTrayLite_YYYYMMDD.log。每日归档保存在 logs 文件夹中，不会自动删除。
+
+webview2-profile 文件夹包含敏感的已登录会话数据，切勿上传、分享或公开同步。
+本软件包不包含资料目录、设置、日志、令牌、Cookie、密码、转储、PDB 或环境文件。
+
+验证
+----
+创建此 ZIP 前，打包流程已完成 {{TEST_COUNT}} 项自动化测试。
+SHA256SUMS.txt 覆盖包内每个应用文件；ZIP 旁对应的 .zip.sha256 文件覆盖整个 ZIP。
+
+文档中要求的 8–12 小时自然间隔 WebView2 持续测试，在公开分发前仍作为发布验证门槛。
+本版本不包含桌面 Widget、Windows toast／气泡通知、遥测、自动更新、安装器、云端后端或凭据提取。
+
+对应源码：https://github.com/zjwww/Codex-Usage-Tray-Lite/tree/v{{VERSION}}

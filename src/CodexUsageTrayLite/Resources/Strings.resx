@@ -14,10 +14,10 @@
   <data name="IconStyleMenu" xml:space="preserve"><value>Icon style</value></data>
   <data name="IconStyleFiveHourOnly" xml:space="preserve"><value>5-Hour Only</value></data>
   <data name="IconStyleWeeklyOnly" xml:space="preserve"><value>Weekly Only</value></data>
-  <data name="IconStyleBoth" xml:space="preserve"><value>Both (Default)</value></data>
+  <data name="IconStyleBoth" xml:space="preserve"><value>Stacked (Default)</value></data>
   <data name="IconStyleSideBySide" xml:space="preserve"><value>Side by Side</value></data>
   <data name="StartAtLogin" xml:space="preserve"><value>Start at login</value></data>
-  <data name="ProxySettings" xml:space="preserve"><value>Proxy settings (WebView2)</value></data>
+  <data name="ProxySettings" xml:space="preserve"><value>Proxy settings...</value></data>
   <data name="Theme" xml:space="preserve"><value>Theme</value></data>
   <data name="ThemeFollowWindows" xml:space="preserve"><value>Follow Windows</value></data>
   <data name="ThemeLight" xml:space="preserve"><value>Light</value></data>
@@ -30,7 +30,8 @@
   <data name="LanguageKorean" xml:space="preserve"><value>한국어</value></data>
   <data name="OpenLogs" xml:space="preserve"><value>Open logs</value></data>
   <data name="OpenConfig" xml:space="preserve"><value>Open config folder</value></data>
-  <data name="ClearSession" xml:space="preserve"><value>Clear WebView2 login session</value></data>
+  <data name="ClearSession" xml:space="preserve"><value>Clear WebView2 login session...</value></data>
+  <data name="ToolsAndHelp" xml:space="preserve"><value>Tools &amp;&amp; Help</value></data>
   <data name="Help" xml:space="preserve"><value>Help</value></data>
   <data name="About" xml:space="preserve"><value>About</value></data>
   <data name="Exit" xml:space="preserve"><value>Exit</value></data>
