@@ -33,6 +33,7 @@
   <data name="ClearSession" xml:space="preserve"><value>WebView2 のログインセッションを消去...</value></data>
   <data name="ToolsAndHelp" xml:space="preserve"><value>ツールとヘルプ</value></data>
   <data name="Help" xml:space="preserve"><value>ヘルプ</value></data>
+  <data name="Update" xml:space="preserve"><value>更新</value></data>
   <data name="About" xml:space="preserve"><value>バージョン情報</value></data>
   <data name="Exit" xml:space="preserve"><value>終了</value></data>
   <data name="Unknown" xml:space="preserve"><value>不明</value></data>
@@ -128,6 +129,7 @@ WebView2 のログイン情報とプロキシ設定は使用されません。
   <data name="ClearSessionPrompt" xml:space="preserve"><value>保存されている ChatGPT のログインセッションを消去しますか？</value></data>
   <data name="ClearSessionFailed" xml:space="preserve"><value>アプリの WebView2 ログインプロファイルを消去できませんでした。すべてのログインウィンドウを閉じてから再試行してください。</value></data>
   <data name="LogOpenFailed" xml:space="preserve"><value>ログファイルを開けませんでした。</value></data>
+  <data name="UpdateOpenFailed" xml:space="preserve"><value>GitHub の最新リリースページを開けませんでした。</value></data>
   <data name="WebViewRuntimeRequired" xml:space="preserve"><value>Microsoft Edge WebView2 Runtime が必要です。Evergreen Runtime をインストールまたは修復してから、このアプリを再起動してください。</value></data>
   <data name="WebViewTimeout" xml:space="preserve"><value>WebView2 の初期化がタイムアウトしました。選択したプロキシモードを確認してから再試行してください。</value></data>
   <data name="WebViewInitializeFailedFormat" xml:space="preserve"><value>ログインブラウザーを初期化できませんでした。

@@ -33,6 +33,7 @@
   <data name="ClearSession" xml:space="preserve"><value>清除 WebView2 登录会话...</value></data>
   <data name="ToolsAndHelp" xml:space="preserve"><value>工具与帮助</value></data>
   <data name="Help" xml:space="preserve"><value>帮助</value></data>
+  <data name="Update" xml:space="preserve"><value>更新</value></data>
   <data name="About" xml:space="preserve"><value>关于</value></data>
   <data name="Exit" xml:space="preserve"><value>退出</value></data>
   <data name="Unknown" xml:space="preserve"><value>未知</value></data>
@@ -128,6 +129,7 @@ Codex CLI
   <data name="ClearSessionPrompt" xml:space="preserve"><value>是否清除已保存的 ChatGPT 登录会话？</value></data>
   <data name="ClearSessionFailed" xml:space="preserve"><value>无法清除本程序的 WebView2 登录配置文件。请关闭所有登录窗口后重试。</value></data>
   <data name="LogOpenFailed" xml:space="preserve"><value>无法打开日志文件。</value></data>
+  <data name="UpdateOpenFailed" xml:space="preserve"><value>无法打开 GitHub 最新版本页面。</value></data>
   <data name="WebViewRuntimeRequired" xml:space="preserve"><value>需要 Microsoft Edge WebView2 Runtime。请安装或修复 Evergreen Runtime，然后重新启动本程序。</value></data>
   <data name="WebViewTimeout" xml:space="preserve"><value>WebView2 初始化超时。请检查所选代理模式后重试。</value></data>
   <data name="WebViewInitializeFailedFormat" xml:space="preserve"><value>无法初始化登录浏览器。

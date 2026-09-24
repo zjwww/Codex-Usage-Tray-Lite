@@ -46,11 +46,23 @@ Codex Usage Tray Lite 是非官方的 Windows 便携式系统托盘工具，通�
 
 ![并排双条的额度组合与每周全宽回退效果](docs/images/side-by-side.png)
 
-### 英文菜单
+### 菜单交互预览
 
-<img src="docs/images/menu-english-light.png" alt="英文菜单 — 浅色" width="251"> <img src="docs/images/menu-english-dark.png" alt="英文菜单 — 深色" width="251">
+<a href="https://zjwww.github.io/Codex-Usage-Tray-Lite/zh-CN.html">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/menu-demo-zh-cn-dark.gif">
+    <source media="(prefers-color-scheme: light)" srcset="docs/images/menu-demo-zh-cn-light.gif">
+    <img src="docs/images/menu-demo-zh-cn-light.gif" alt="简体中文菜单动图：用量来源、刷新间隔、图标样式及工具与帮助" width="760">
+  </picture>
+</a>
 
-菜单渲染图使用真实英文资源文本和程序的菜单渲染器，数据为示例。在 CLI 模式下，登录操作变为 **Codex CLI login help**，并隐藏 WebView2 代理和会话清理操作。
+**[体验可交互的菜单演示](https://zjwww.github.io/Codex-Usage-Tray-Lite/zh-CN.html)** · [浅色动图](docs/images/menu-demo-zh-cn-light.gif) · [深色动图](docs/images/menu-demo-zh-cn-dark.gif)
+
+动图与演示页是 v0.2.26 菜单的浏览器模拟，采用程序的简体中文文本和示例数据，预览会适配阅读者的深浅配色。在交互页中可以展开子菜单、切换用量来源、刷新间隔和主题；操作不会连接真实账户或修改电脑设置。实际 Windows 菜单的字体、阴影与定位可能略有不同。演示页提供英文和简体中文，桌面程序支持五种语言。
+
+在 CLI 模式下，登录操作变为 **Codex CLI 登录帮助**，并隐藏 WebView2 代理和会话清理操作。[查看原生控件浅色渲染](docs/images/menu-chinese-light.png)或[深色渲染](docs/images/menu-chinese-dark.png)。
+
+在**工具与帮助**中，**更新**会通过默认浏览器打开 GitHub 最新 Release，**关于**右侧会显示当前运行的程序版本号。
 
 ### 现有程序图标
 
@@ -76,8 +88,8 @@ Windows 10 和 Windows on ARM 尚未作为目标环境验证。本程序不需�
 2. 解压前比对 SHA-256：
 
    ```powershell
-   Get-FileHash .\CodexUsageTrayLite-v0.2.18-win-x64.zip -Algorithm SHA256
-   Get-Content .\CodexUsageTrayLite-v0.2.18-win-x64.zip.sha256
+   Get-FileHash .\CodexUsageTrayLite-v0.2.26-win-x64.zip -Algorithm SHA256
+   Get-Content .\CodexUsageTrayLite-v0.2.26-win-x64.zip.sha256
    ```
 
 3. 将**整个 ZIP** 解压到固定目录，保留可执行文件旁的 DLL 和语言目录。不要直接在压缩包内运行。
@@ -113,7 +125,7 @@ dotnet build .\CodexUsageTrayLite.sln -c Release -p:Platform=x64 --no-restore
 & .\tests\CodexUsageTrayLite.Tests\bin\x64\Release\net48\CodexUsageTrayLite.Tests.exe
 ```
 
-v0.2.18 构建通过了 **89 项自动化测试**，覆盖解析器、设置、本地化、图标像素、进程清理和模拟资源生命周期；这不代表全部真实登录流程、代理环境、硬件 DPI 或 8–12 小时持续运行均已验证。参见[验证说明](TESTING.md)。
+v0.2.26 构建通过了 **91 项自动化测试**，覆盖解析器、设置、本地化、图标像素、进程清理和模拟资源生命周期；这不代表全部真实登录流程、代理环境、硬件 DPI 或 8–12 小时持续运行均已验证。参见[验证说明](TESTING.md)。
 
 ## 许可证与致谢
 

@@ -6,6 +6,75 @@ This file records the functional changes from the local development release `0.1
 
 Versions before `0.2.16` were local development iterations and retain the `-local` suffix in this history. `0.2.16` was the first GitHub release. Starting with `0.1.1-local`, every user-visible update receives a new version number and a separate ZIP that cannot overwrite an older release; current local candidates and GitHub release assets use the same `CodexUsageTrayLite-v<version>-win-x64.zip` filename without a `local` suffix.
 
+## 0.2.26 - 2026-09-24
+
+### Fixed
+
+- Corrected the About menu's version prefix from `v.` to `v`; this release displays `v0.2.26`.
+- Preserved the smaller right-aligned summary styling and all v0.2.24 Update-menu behavior. All 91 automated tests pass.
+
+## 0.2.25 - 2026-09-24
+
+### Changed
+
+- Prefixed the About menu's right-side version summary with `v.`; for this release it displays `v.0.2.25`.
+- Kept the existing smaller summary font, right alignment, submenu geometry, Update command, and all functional behavior unchanged. All 91 automated tests pass.
+
+## 0.2.24 - 2026-09-24
+
+### Added
+
+- Added **Update** between Help and About in the Tools & Help submenu. Its right-side summary reads `GitHub`, and clicking it opens the project's latest GitHub Release page in the Windows default browser.
+- Added localized Update labels and browser-open failure messages for English, Simplified Chinese, Traditional Chinese, Japanese, and Korean.
+
+### Changed
+
+- About now displays the current application version in the same smaller right-aligned summary style used elsewhere in the menu.
+- Added HTTPS URL-launch validation, structured update-page launch logging, menu-order/summary regression coverage, localization coverage, and production submenu renders. All 91 automated tests pass.
+
+## 0.2.23 - 2026-09-24
+
+### Fixed
+
+- Aligned the left edge of custom account, quota, reset, update, and setting-summary labels with ordinary command rows in the main tray menu.
+- Custom rows now retain the native Windows `TextRenderer` glyph padding used by standard `ToolStripMenuItem` text instead of starting approximately five pixels farther left.
+- Preserved the v0.2.22 native item bounds and zero-gap submenu placement; right-aligned setting summaries, menu hierarchy, commands, and behavior are unchanged.
+- Added a renderer contract regression and production WinForms renders for English/Simplified Chinese, Light/Dark, CLI/WebView2, and long-email font scaling. All 90 automated tests pass.
+
+## 0.2.22 - 2026-09-24
+
+### Fixed
+
+- Removed the remaining approximately 11-pixel gap between the parent tray menu and its submenus.
+- Removed per-item horizontal margin and padding that increased the menu-item bounds without increasing the visible `ContextMenuStrip` window. Visual breathing room remains provided by the renderer's text geometry and inset selection background, so the R2 appearance is retained without affecting submenu coordinates.
+- Strengthened the regression baseline to use a truly unmodified WinForms submenu. All five summary-bearing parent items must now match its native edge behavior, including the normal one-pixel border overlap, in both normal-email and long-email layouts.
+
+## 0.2.21 - 2026-09-23
+
+### Partial fix
+
+- Fixed the actual cause of detached submenus: summary-bearing parent items could become wider than the visible `ContextMenuStrip` because their custom preferred width was not included in `ToolStripDropDownMenu`'s native text metrics.
+- Current-setting text now reserves width through WinForms' native secondary-text layout metric but remains custom-drawn once, at the approved smaller size and secondary color. The invisible excess item width is removed, so native submenu placement starts at the parent menu edge.
+- Removed the ineffective v0.2.20 direction override and restored WinForms' own screen-collision and left/right cascade behavior.
+- Target-machine verification showed that the large gap was reduced but an approximately 11-pixel gap remained. The first baseline still included the application's custom horizontal item spacing; `0.2.22` corrects that baseline and removes the remaining spacing from layout bounds.
+
+## 0.2.20 - 2026-09-23
+
+### Attempted fix
+
+- Attempted to address detached submenus by selecting an explicit adjacent left/right direction before opening.
+- Target-machine verification showed the gap was unchanged because the underlying parent item remained wider than the visible menu. This attempt is superseded by the size-metric correction in `0.2.21`.
+
+## 0.2.19 - 2026-09-23
+
+### Changed
+
+- Refined the native tray menu with a minimum 34-logical-pixel row height, wider spacing, soft separators, rounded selection highlights, and a cleaner border in Light and Dark modes.
+- Rendered current-setting summaries independently at a smaller size and secondary theme color, so long labels and right-aligned values no longer compete for the same text column.
+- Kept primary account/quota rows high contrast, secondary status rows muted, and truly disabled actions visibly disabled.
+- Replaced block-style checked backgrounds with a clear check mark while preserving native keyboard navigation, submenu behavior, working-area avoidance, and the existing menu hierarchy and commands.
+- Added production WinForms render coverage for English and Simplified Chinese, Light and Dark, WebView2 and CLI, selected rows, submenus, long email addresses, and 100%/125%/150%/200% font-scale cases. All 89 automated tests pass.
+
 ## 0.2.18 - 2026-09-23
 
 ### Changed

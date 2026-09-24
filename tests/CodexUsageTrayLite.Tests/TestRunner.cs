@@ -72,9 +72,9 @@ namespace CodexUsageTrayLite.Tests
                 {
                     return RunWebViewEmailProbe();
                 }
-                if (args.Length >= 2 && args[0] == "--render-menu-r1")
+                if (args.Length >= 2 && (args[0] == "--render-menu-r1" || args[0] == "--render-menu-r2"))
                 {
-                    return RenderMenuR1(args[1]);
+                    return RenderMenuR2(args[1]);
                 }
                 return RunAllAsync().GetAwaiter().GetResult();
             }
@@ -164,10 +164,12 @@ namespace CodexUsageTrayLite.Tests
             Test("UsageFieldUnavailableDiagnostics", UsageFieldUnavailableDiagnostics);
             Test("LogDailyRotation", LogDailyRotation);
             Test("LogFileOpenLaunch", LogFileOpenLaunch);
+            Test("ExternalUrlOpenLaunch", ExternalUrlOpenLaunch);
             await TestAsync("RefreshConcurrency", RefreshConcurrency);
             await TestAsync("RefreshCancellation", RefreshCancellation);
             await TestAsync("RepeatedRefreshLifecycle100", RepeatedRefreshLifecycle100);
             Test("TrayMenuReorganizationAndTheme", TrayMenuReorganizationAndTheme);
+            Test("TrayMenuTextAlignmentContract", TrayMenuTextAlignmentContract);
             Test("GdiIconLifecycle", GdiIconLifecycle);
             Test("ThemeControlApplication", ThemeControlApplication);
             Test("ProxyDialogLayoutAndDirectOption", ProxyDialogLayoutAndDirectOption);
@@ -1248,6 +1250,16 @@ namespace CodexUsageTrayLite.Tests
         {
             var settings = CreateMenuTestSettings(AppLanguage.English, AppThemeMode.Dark, UsageSource.WebView2);
             var fullEmail = "long.account.name.for.menu.validation+windows11@example.test";
+            int nativeSubmenuOverhang;
+            using (var baselineMenu = new ContextMenuStrip())
+            {
+                var baselineItem = new ToolStripMenuItem("Usage source");
+                baselineItem.DropDownItems.Add("WebView2");
+                baselineMenu.Items.Add(baselineItem);
+                baselineMenu.PerformLayout();
+                nativeSubmenuOverhang = baselineItem.Bounds.Right - baselineMenu.ClientRectangle.Right;
+                True(nativeSubmenuOverhang >= -10, "Native submenu overhang baseline is invalid: " + nativeSubmenuOverhang);
+            }
             using (var context = new TrayApplicationContext(settings, false))
             {
                 context.SetAccountEmailForTesting(fullEmail, UsageSource.WebView2);
@@ -1282,9 +1294,20 @@ namespace CodexUsageTrayLite.Tests
 
                 var dark = ThemeService.GetPalette(AppThemeMode.Dark);
                 Equal(dark.Text, ThemeService.MenuItemTextColor(account, dark));
-                Equal(dark.MutedText, ThemeService.MenuItemTextColor(resets, dark));
+                Equal(Color.FromArgb(192, 195, 202), dark.SummaryText);
+                Equal(dark.SummaryText, ThemeService.MenuItemTextColor(resets, dark));
                 var normalDisabled = new TrayMenuItem("disabled") { Enabled = false };
-                Equal(dark.MutedText, ThemeService.MenuItemTextColor(normalDisabled, dark));
+                Equal(dark.DisabledText, ThemeService.MenuItemTextColor(normalDisabled, dark));
+                True(dark.DisabledText != dark.SummaryText, "Disabled and secondary menu text must remain visually distinct.");
+
+                True(menu.Padding.Left + account.Margin.Left >= 4, "Menu outer padding is too small.");
+                var professionalRenderer = menu.Renderer as ToolStripProfessionalRenderer;
+                True(professionalRenderer != null && professionalRenderer.RoundedEdges, "Menu renderer must retain soft rounded edges.");
+                True(account.GetPreferredSize(Size.Empty).Height >= TrayMenuItem.MinimumLogicalHeight, "Menu rows are too compact at 100%." );
+                using (var summaryFont = TrayMenuItem.CreateSummaryFont(account.Font))
+                {
+                    True(summaryFont.SizeInPoints < account.Font.SizeInPoints, "Summary font is not smaller than the primary label font.");
+                }
 
                 var sourceMenu = (TrayMenuItem)menu.Items["UsageSource"];
                 var intervalMenu = (TrayMenuItem)menu.Items["RefreshInterval"];
@@ -1299,15 +1322,33 @@ namespace CodexUsageTrayLite.Tests
                 foreach (var summaryItem in new[] { sourceMenu, intervalMenu, iconMenu, themeMenu, languageMenu })
                 {
                     Equal(Keys.None, summaryItem.ShortcutKeys);
-                    True(summaryItem.ShowShortcutKeys, summaryItem.Name + " summary is not participating in native menu layout.");
+                    True(summaryItem.ShowShortcutKeys, summaryItem.Name + " does not reserve native layout width for its summary.");
+                    Equal(summaryItem.SummaryText, summaryItem.ShortcutKeyDisplayString);
+                    True(summaryItem.GetPreferredSize(Size.Empty).Height >= TrayMenuItem.MinimumLogicalHeight, summaryItem.Name + " row is too compact.");
                 }
-
+                menu.PerformLayout();
+                foreach (var summaryItem in new[] { sourceMenu, intervalMenu, iconMenu, themeMenu, languageMenu })
+                {
+                    True(
+                        summaryItem.Bounds.Right - menu.ClientRectangle.Right <= nativeSubmenuOverhang,
+                        summaryItem.Name + " bounds " + summaryItem.Bounds + " exceed parent display " +
+                        menu.ClientRectangle + " beyond native overhang " + nativeSubmenuOverhang +
+                        " and would detach its submenu.");
+                }
                 Equal(6, sourceMenu.DropDownItems.Count);
                 True(sourceMenu.DropDownItems["ProxySettings"].Available, "WebView2 proxy item is hidden.");
                 True(sourceMenu.DropDownItems["ClearSession"].Available, "WebView2 clear-session item is hidden.");
                 var toolsMenu = (ToolStripMenuItem)menu.Items["ToolsAndHelp"];
-                Equal(5, toolsMenu.DropDownItems.Count);
-                Equal("OpenLogs|OpenConfig||Help|About", JoinMenuNames(toolsMenu.DropDownItems));
+                Equal(6, toolsMenu.DropDownItems.Count);
+                Equal("OpenLogs|OpenConfig||Help|Update|About", JoinMenuNames(toolsMenu.DropDownItems));
+                var update = (TrayMenuItem)toolsMenu.DropDownItems["Update"];
+                var about = (TrayMenuItem)toolsMenu.DropDownItems["About"];
+                Equal("GitHub", update.SummaryText);
+                Equal("GitHub", update.ShortcutKeyDisplayString);
+                Equal("v" + AppConstants.Version, about.SummaryText);
+                Equal("v" + AppConstants.Version, about.ShortcutKeyDisplayString);
+                True(update.ShowShortcutKeys && about.ShowShortcutKeys,
+                    "Update/About summaries do not reserve the native secondary-text column.");
 
                 settings.usageSource = UsageSource.CodexCli;
                 context.RefreshMenuForTesting();
@@ -1318,45 +1359,83 @@ namespace CodexUsageTrayLite.Tests
                 True(!sourceMenu.DropDownItems["ClearSession"].Available, "CLI mode retained the clear-session item.");
                 Equal(2, CountAvailableNonSeparatorItems(sourceMenu.DropDownItems));
 
+                var unconstrainedHeight = menu.GetPreferredSize(Size.Empty).Height;
                 TrayApplicationContext.ApplyMenuWorkingAreaLimit(menu, new Rectangle(0, 0, 320, 480));
                 Equal(new Size(304, 464), menu.MaximumSize);
+                True(unconstrainedHeight > menu.MaximumSize.Height,
+                    "The working-area check is not exercising the constrained scrolling path.");
+            }
+
+            var compactSettings = CreateMenuTestSettings(AppLanguage.English, AppThemeMode.Dark, UsageSource.CodexCli);
+            using (var compactContext = new TrayApplicationContext(compactSettings, false))
+            {
+                compactContext.SetAccountEmailForTesting("demo@example.com", UsageSource.CodexCli);
+                var compactMenu = compactContext.MenuForTesting;
+                compactMenu.PerformLayout();
+                foreach (var name in new[] { "UsageSource", "RefreshInterval", "IconStyle", "Theme", "Language" })
+                {
+                    var summaryItem = (TrayMenuItem)compactMenu.Items[name];
+                    True(
+                        summaryItem.Bounds.Right - compactMenu.ClientRectangle.Right <= nativeSubmenuOverhang,
+                        summaryItem.Name + " compact bounds " + summaryItem.Bounds + " exceed parent " +
+                        compactMenu.ClientRectangle + " beyond native overhang " + nativeSubmenuOverhang +
+                        " and would detach its submenu.");
+                }
             }
         }
 
-        private static int RenderMenuR1(string outputDirectory)
+        private static void TrayMenuTextAlignmentContract()
+        {
+            var flags = ThemeService.MenuLabelTextFormatFlags;
+            True((flags & (TextFormatFlags.Right | TextFormatFlags.HorizontalCenter)) == 0,
+                "Custom tray-menu labels are not using the native left alignment.");
+            True((flags & TextFormatFlags.NoPadding) == 0,
+                "Custom tray-menu labels suppress native glyph padding and drift left of ordinary menu commands.");
+            True((flags & TextFormatFlags.NoPrefix) == TextFormatFlags.NoPrefix,
+                "Read-only tray-menu labels may accidentally treat ampersands as access keys.");
+        }
+
+        private static int RenderMenuR2(string outputDirectory)
         {
             Directory.CreateDirectory(outputDirectory);
-            RenderMenuR1Variant(outputDirectory, AppLanguage.English, AppThemeMode.Light, UsageSource.WebView2, "en-light", false);
-            RenderMenuR1Variant(outputDirectory, AppLanguage.English, AppThemeMode.Dark, UsageSource.WebView2, "en-dark", false);
-            RenderMenuR1Variant(outputDirectory, AppLanguage.ChineseSimplified, AppThemeMode.Light, UsageSource.WebView2, "zh-cn-light", false);
-            RenderMenuR1Variant(outputDirectory, AppLanguage.ChineseSimplified, AppThemeMode.Dark, UsageSource.WebView2, "zh-cn-dark", false);
-            RenderMenuR1Variant(outputDirectory, AppLanguage.English, AppThemeMode.Dark, UsageSource.CodexCli, "en-dark-cli", false);
-            RenderMenuR1Variant(outputDirectory, AppLanguage.ChineseSimplified, AppThemeMode.Light, UsageSource.CodexCli, "zh-cn-light-cli", false);
-            RenderMenuR1Variant(outputDirectory, AppLanguage.English, AppThemeMode.Dark, UsageSource.WebView2, "en-dark-long-email-150pct", true);
+            RenderMenuVariant(outputDirectory, AppLanguage.English, AppThemeMode.Light, UsageSource.WebView2, "en-light", 1F);
+            RenderMenuVariant(outputDirectory, AppLanguage.English, AppThemeMode.Dark, UsageSource.WebView2, "en-dark", 1F);
+            RenderMenuVariant(outputDirectory, AppLanguage.ChineseSimplified, AppThemeMode.Light, UsageSource.WebView2, "zh-cn-light", 1F);
+            RenderMenuVariant(outputDirectory, AppLanguage.ChineseSimplified, AppThemeMode.Dark, UsageSource.WebView2, "zh-cn-dark", 1F);
+            RenderMenuVariant(outputDirectory, AppLanguage.English, AppThemeMode.Dark, UsageSource.CodexCli, "en-dark-cli", 1F);
+            RenderMenuVariant(outputDirectory, AppLanguage.ChineseSimplified, AppThemeMode.Light, UsageSource.CodexCli, "zh-cn-light-cli", 1F);
+            RenderMenuVariant(outputDirectory, AppLanguage.English, AppThemeMode.Dark, UsageSource.WebView2, "en-dark-long-email-125pct", 1.25F);
+            RenderMenuVariant(outputDirectory, AppLanguage.English, AppThemeMode.Dark, UsageSource.WebView2, "en-dark-long-email-150pct", 1.5F);
+            RenderMenuVariant(outputDirectory, AppLanguage.English, AppThemeMode.Dark, UsageSource.WebView2, "en-dark-long-email-200pct", 2F);
             Console.WriteLine("Rendered production WinForms menu previews to " + Path.GetFullPath(outputDirectory));
             return 0;
         }
 
-        private static void RenderMenuR1Variant(string outputDirectory, AppLanguage language, AppThemeMode theme, UsageSource source, string fileStem, bool scaledLongEmail)
+        private static void RenderMenuVariant(string outputDirectory, AppLanguage language, AppThemeMode theme, UsageSource source, string fileStem, float fontScale)
         {
             var settings = CreateMenuTestSettings(language, theme, source);
             settings.lastSuccessfulUsageSource = source;
             using (var context = new TrayApplicationContext(settings, false))
             {
-                var email = scaledLongEmail
+                var email = fontScale > 1F
                     ? "very.long.account.name.for.screen.boundary.and.dpi.validation+cutl@example.test"
                     : "demo@example.com";
                 context.SetAccountEmailForTesting(email, source);
                 var menu = context.MenuForTesting;
-                if (scaledLongEmail)
+                if (fontScale > 1F)
                 {
-                    menu.Font = new Font(menu.Font.FontFamily, menu.Font.Size * 1.5F, menu.Font.Style, GraphicsUnit.Point);
+                    menu.Font = new Font(menu.Font.FontFamily, menu.Font.Size * fontScale, menu.Font.Style, GraphicsUnit.Point);
                     ThemeService.ApplyToMenu(menu, theme);
                     context.RefreshMenuForTesting();
                 }
                 SaveToolStripBitmap(menu, Path.Combine(outputDirectory, fileStem + "-main.png"));
+                var refreshInterval = (ToolStripMenuItem)menu.Items["RefreshInterval"];
+                refreshInterval.Select();
+                SaveToolStripBitmap(menu, Path.Combine(outputDirectory, fileStem + "-main-selected.png"));
                 SaveToolStripBitmap(((ToolStripMenuItem)menu.Items["UsageSource"]).DropDown,
                     Path.Combine(outputDirectory, fileStem + "-source.png"));
+                SaveToolStripBitmap(refreshInterval.DropDown,
+                    Path.Combine(outputDirectory, fileStem + "-interval.png"));
                 SaveToolStripBitmap(((ToolStripMenuItem)menu.Items["ToolsAndHelp"]).DropDown,
                     Path.Combine(outputDirectory, fileStem + "-tools.png"));
                 SaveToolStripBitmap(((ToolStripMenuItem)menu.Items["IconStyle"]).DropDown,
@@ -1463,6 +1542,11 @@ namespace CodexUsageTrayLite.Tests
             Equal("工具與說明", traditional.ToolsAndHelp);
             Equal("ツールとヘルプ", japanese.ToolsAndHelp);
             Equal("도구 및 도움말", korean.ToolsAndHelp);
+            Equal("Update", english.Update);
+            Equal("更新", simplified.Update);
+            Equal("更新", traditional.Update);
+            Equal("更新", japanese.Update);
+            Equal("업데이트", korean.Update);
             Equal("邮箱账号：user@example.com", simplified.FormatAccountEmail("user@example.com"));
             Equal("用量重置：2 个", simplified.FormatUsageResets(2));
             Equal("用量重置：未知", simplified.FormatUsageResets(null));
@@ -1765,7 +1849,7 @@ namespace CodexUsageTrayLite.Tests
                 ThemeService.ApplyToMenu(menu, AppThemeMode.Dark);
                 Equal(dark.SurfaceBackground, menu.BackColor);
                 Equal(dark.Text, item.ForeColor);
-                Equal(dark.MutedText, item.DropDownItems[0].ForeColor);
+                Equal(dark.DisabledText, item.DropDownItems[0].ForeColor);
             }
 
             using (var proxy = new ProxySettingsForm(new ProxySettings { mode = ProxyMode.Direct }, AppThemeMode.Dark))
@@ -2451,6 +2535,15 @@ namespace CodexUsageTrayLite.Tests
             var startInfo = TrayApplicationContext.CreateFileOpenStartInfo(path);
             Equal(Path.GetFullPath(path), startInfo.FileName);
             True(startInfo.UseShellExecute, "Log file is not opened through its Windows file association.");
+        }
+
+        private static void ExternalUrlOpenLaunch()
+        {
+            var startInfo = TrayApplicationContext.CreateExternalUrlOpenStartInfo(AppConstants.LatestReleaseUrl);
+            Equal(AppConstants.LatestReleaseUrl, startInfo.FileName);
+            True(startInfo.UseShellExecute, "The release page is not opened through the Windows URL association.");
+            Throws<ArgumentException>(() => TrayApplicationContext.CreateExternalUrlOpenStartInfo("http://example.test/release"));
+            Throws<ArgumentException>(() => TrayApplicationContext.CreateExternalUrlOpenStartInfo("not-a-url"));
         }
 
         private static void LogDailyRotation()

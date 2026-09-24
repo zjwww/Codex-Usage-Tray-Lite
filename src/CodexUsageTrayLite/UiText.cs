@@ -69,6 +69,7 @@ namespace CodexUsageTrayLite
         public string ClearSession { get { return Get("ClearSession"); } }
         public string ToolsAndHelp { get { return Get("ToolsAndHelp"); } }
         public string Help { get { return Get("Help"); } }
+        public string Update { get { return Get("Update"); } }
         public string About { get { return Get("About"); } }
         public string Exit { get { return Get("Exit"); } }
         public string Unknown { get { return Get("Unknown"); } }
@@ -173,6 +174,7 @@ namespace CodexUsageTrayLite
         public string ClearSessionPrompt { get { return Get("ClearSessionPrompt"); } }
         public string ClearSessionFailed { get { return Get("ClearSessionFailed"); } }
         public string LogOpenFailed { get { return Get("LogOpenFailed"); } }
+        public string UpdateOpenFailed { get { return Get("UpdateOpenFailed"); } }
         public string WebViewRuntimeRequired { get { return Get("WebViewRuntimeRequired"); } }
         public string WebViewTimeout { get { return Get("WebViewTimeout"); } }
         public string WebViewInitializeFailed(string error) { return Format("WebViewInitializeFailedFormat", error); }

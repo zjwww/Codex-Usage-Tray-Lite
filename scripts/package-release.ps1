@@ -62,7 +62,7 @@ if ($releaseNotes -notmatch $currentReleaseHeading -or $releaseNotesChinese -not
     throw "Both release notes must identify current version '$version' and no local suffix."
 }
 foreach ($history in @($changeLog, $changeLogChinese)) {
-    foreach ($requiredMarker in @('## 0.1.0-local - ', '## 0.2.15-local - ', '## 0.2.16 - ', '## 0.2.17 - ')) {
+    foreach ($requiredMarker in @('## 0.1.0-local - ', '## 0.2.15-local - ', '## 0.2.16 - ', '## 0.2.17 - ', '## 0.2.18 - ', '## 0.2.19 - ', '## 0.2.20 - ', '## 0.2.21 - ', '## 0.2.22 - ', '## 0.2.23 - ', '## 0.2.24 - ', '## 0.2.25 - ')) {
         if (-not $history.Contains($requiredMarker)) {
             throw "The complete changelog history is missing required marker '$requiredMarker'."
         }

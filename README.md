@@ -46,11 +46,23 @@ Weekly uses green above 50%, orange at 21–50%, and red at 0–20%. In dual-quo
 
 ![Side by Side quota combinations and the full-width Weekly fallback](docs/images/side-by-side.png)
 
-### English menu
+### Interactive menu preview
 
-<img src="docs/images/menu-english-light.png" alt="English menu — Light" width="251"> <img src="docs/images/menu-english-dark.png" alt="English menu — Dark" width="251">
+<a href="https://zjwww.github.io/Codex-Usage-Tray-Lite/en.html">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/menu-demo-en-dark.gif">
+    <source media="(prefers-color-scheme: light)" srcset="docs/images/menu-demo-en-light.gif">
+    <img src="docs/images/menu-demo-en-light.gif" alt="Animated English menu demo: usage source, refresh interval, icon style, and Tools &amp; Help" width="760">
+  </picture>
+</a>
 
-The menu rendering uses real English resource labels and the application menu renderer with sample data. In CLI mode, the login action becomes **Codex CLI login help**, and WebView2 proxy/session actions are hidden.
+**[Try the interactive menu demo](https://zjwww.github.io/Codex-Usage-Tray-Lite/en.html)** · [Light animation](docs/images/menu-demo-en-light.gif) · [Dark animation](docs/images/menu-demo-en-dark.gif)
+
+The animation and linked page are browser simulations of the v0.2.26 menu, using the application's English labels and sample data. The preview follows your light/dark preference. In the interactive demo, open submenus, switch usage sources, and change the interval or theme; nothing connects to an account or changes your computer settings. Native Windows fonts, shadows, and positioning may differ. The demo offers English and Simplified Chinese; the desktop app supports five languages.
+
+In CLI mode, the login action becomes **Codex CLI login help**, and WebView2 proxy/session actions are hidden. [View the native-control Light rendering](docs/images/menu-english-light.png) or [Dark rendering](docs/images/menu-english-dark.png).
+
+Under **Tools & Help**, **Update** opens the latest GitHub Release in the default browser and **About** shows the running application version in the right-side summary.
 
 ### Existing application icon
 
@@ -76,8 +88,8 @@ Windows 10 and Windows on ARM are not validated targets. Python, Playwright, and
 2. Compare the SHA-256 hash before extracting:
 
    ```powershell
-   Get-FileHash .\CodexUsageTrayLite-v0.2.18-win-x64.zip -Algorithm SHA256
-   Get-Content .\CodexUsageTrayLite-v0.2.18-win-x64.zip.sha256
+   Get-FileHash .\CodexUsageTrayLite-v0.2.26-win-x64.zip -Algorithm SHA256
+   Get-Content .\CodexUsageTrayLite-v0.2.26-win-x64.zip.sha256
    ```
 
 3. Extract the **entire ZIP** into a permanent folder. Keep the DLLs and language folders beside the executable. Do not run from inside the ZIP.
@@ -113,7 +125,7 @@ dotnet build .\CodexUsageTrayLite.sln -c Release -p:Platform=x64 --no-restore
 & .\tests\CodexUsageTrayLite.Tests\bin\x64\Release\net48\CodexUsageTrayLite.Tests.exe
 ```
 
-The v0.2.18 build passed **89 automated tests**. This covers parsers, settings, localization, renderer pixels, process cleanup, and simulated resource lifecycles; it is not proof of every authenticated browser flow, proxy setup, hardware DPI, or an 8–12 hour soak. See [validation details](TESTING.md).
+The v0.2.26 build passed **91 automated tests**. This covers parsers, settings, localization, renderer pixels, process cleanup, and simulated resource lifecycles; it is not proof of every authenticated browser flow, proxy setup, hardware DPI, or an 8–12 hour soak. See [validation details](TESTING.md).
 
 ## License and acknowledgments
 

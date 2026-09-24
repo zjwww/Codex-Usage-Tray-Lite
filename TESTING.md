@@ -21,6 +21,75 @@ Create the versioned portable ZIP only after the full build and test gate:
 
 The script writes a ZIP and matching `.zip.sha256` under `artifacts\packages`. It must fail if either output for the current version already exists. Increase `Version`, `AssemblyVersion`, `FileVersion`, `InformationalVersion`, and `AppConstants.Version` for every new package; never delete an older package merely to reuse its version.
 
+## 0.2.26 About version-prefix correction - 2026-09-24
+
+- The Tools & Help regression requires the About secondary text to equal `v` plus `AppConstants.Version`; for this build the visible value is `v0.2.26`.
+- Production WinForms renders under `artifacts\validation\menu-r9` cover the corrected summary in English/Simplified Chinese, Light/Dark, CLI/WebView2, and 125%/150%/200% font-scale cases. These are offscreen production-control renders, not a live notification-area capture.
+- The final packaging gate completed with 0 errors and two restricted-network `NU1900` warnings; all 91 automated tests passed. The 100-session resource check finished at Handles `343 -> 340`; GDI objects remained `17 -> 17`.
+- Package: `artifacts\packages\CodexUsageTrayLite-v0.2.26-win-x64.zip`; SHA-256 `0be4ede80892319e11acf57b7518460ba9580d149e11c69c7e977ebad3033620`. The independent audit verified the 22-file allowlist, all 21 internal manifest hashes, external sidecar, EXE file version `0.2.26.0`, bilingual READMEs, source URL, forbidden-file exclusions, and synchronized loose mirror.
+
+## 0.2.25 About version-prefix refinement - 2026-09-24
+
+- The existing Tools & Help regression now requires the About secondary text to equal `v.` plus `AppConstants.Version`; for this build the visible value is `v.0.2.25`.
+- Production WinForms renders under `artifacts\validation\menu-r8` cover the prefixed summary in English/Simplified Chinese, Light/Dark, CLI/WebView2, and 125%/150%/200% font-scale cases. These are offscreen production-control renders, not a live notification-area capture.
+- The final packaging gate completed with 0 errors and two restricted-network `NU1900` warnings; all 91 automated tests passed. The 100-session resource check finished at Handles `343 -> 340`; GDI objects remained `17 -> 17`.
+- Package: `artifacts\packages\CodexUsageTrayLite-v0.2.25-win-x64.zip`; SHA-256 `11756305831a2204f7c9d7b35261b71bdda616e5421266e9b45e98b2497bbdb9`. The independent audit verified the 22-file allowlist, all 21 internal manifest hashes, external sidecar, EXE file version `0.2.25.0`, bilingual READMEs, source URL, complete changelog, forbidden-file exclusions, and synchronized loose mirror.
+
+## 0.2.24 GitHub update menu and version summary - 2026-09-24
+
+- `TrayMenuReorganizationAndTheme` verifies the Tools & Help order `OpenLogs|OpenConfig||Help|Update|About`, the `GitHub` Update summary, the current-version About summary, and native secondary-text width reservation for both rows.
+- `ExternalUrlOpenLaunch` verifies that the exact project `/releases/latest` URL uses the Windows shell/default browser and rejects non-HTTPS or malformed addresses without actually opening a browser.
+- Resource-key parity and localized-text contracts cover Update and its failure message in English, Simplified Chinese, Traditional Chinese, Japanese, and Korean.
+- Production WinForms renders under `artifacts\validation\menu-r7` cover the Tools & Help submenu in English/Simplified Chinese, Light/Dark, CLI/WebView2, and 125%/150%/200% font-scale cases. These are offscreen production-control renders, not a live notification-area or browser-launch test.
+- The final packaging gate completed with 0 errors and two restricted-network `NU1900` warnings; all 91 automated tests passed. The 100-session resource check finished at Handles `343 -> 340`; GDI objects remained `17 -> 17`.
+- Package: `artifacts\packages\CodexUsageTrayLite-v0.2.24-win-x64.zip`; SHA-256 `c0326c091071d08d078ac38c29be8134910ba3df2658993e422f44efa6ab7e7a`. The independent audit verified the 22-file allowlist, all 21 internal manifest hashes, external sidecar, EXE file version `0.2.24.0`, bilingual READMEs, source URL, complete changelog, forbidden-file exclusions, and synchronized loose mirror.
+
+## 0.2.23 main-menu left-edge alignment - 2026-09-24
+
+- The target-machine screenshot showed two text baselines: status and summary-bearing rows started approximately five pixels farther left than ordinary command rows.
+- Source inspection traced the difference to the custom renderer's `TextFormatFlags.NoPadding`. Standard WinForms menu text retains native `TextRenderer` glyph padding, while the custom status/summary path explicitly removed it.
+- The custom left-label path now uses the same native glyph padding and also treats ampersands in read-only values literally. Right-aligned summaries and the item geometry used for submenu placement are unchanged.
+- `TrayMenuTextAlignmentContract` prevents the custom path from restoring `NoPadding`; the existing native submenu-overhang regression continues to protect the v0.2.22 zero-gap fix.
+- Production WinForms renders under `artifacts\validation\menu-r5` visually confirm a common left edge in English/Simplified Chinese, Light/Dark, WebView2/CLI, and 125%/150%/200% long-email font-scale cases. These are offscreen production-control renders, not a live notification-area or hardware-DPI capture.
+- The final packaging gate completed with 0 errors and two restricted-network `NU1900` warnings; all 90 automated tests passed. The 100-session resource check finished at Handles `343 -> 340`; GDI objects remained `17 -> 17`.
+- Package: `artifacts\packages\CodexUsageTrayLite-v0.2.23-win-x64.zip`; SHA-256 `bea44342146548a267e1f3e193109ae06b475bfae2b5b4ca2bb7d6df04975caf`. The independent audit verified the 22-file allowlist, all 21 internal manifest hashes, external sidecar, EXE file version `0.2.23.0`, bilingual READMEs, current source URL, complete changelog, forbidden-file exclusions, and synchronized loose mirror.
+
+## 0.2.22 zero-gap submenu edge alignment - 2026-09-24
+
+- Target-machine evidence showed that v0.2.21 reduced the large submenu offset but retained an approximately 11-pixel gap. The remaining offset matched the extra horizontal `Margin` and `Padding` applied to each menu item by `ApplyMenuLayout`.
+- The regression baseline is now a truly unmodified `ContextMenuStrip` / `ToolStripMenuItem`; its parent item ends one pixel inside the client edge, which produces the normal border overlap in WinForms' right-cascade calculation.
+- Before the spacing correction, `TrayMenuReorganizationAndTheme` failed with the summary parent item 11 pixels beyond that native baseline. After removing item-level horizontal margin/padding, all five summary-bearing rows match the native overhang for both normal-email and long-email menus.
+- Renderer-managed text placement, smaller summary text, row height, separator insets, and rounded selection-background insets retain the intended R2 breathing room without changing the item bounds used for submenu positioning.
+- Production WinForms renders under `artifacts\validation\menu-r4` confirm the main-menu appearance, summaries, checks, and submenus remain visually correct in English/Simplified Chinese, Light/Dark, and the 200%-font long-email case.
+- The final packaging gate completed with 0 errors and only the two known restricted-network `NU1900` warnings, then passed 89 automated tests, 0 failed. The 100-session resource check finished at Handles `338 -> 340`; GDI objects remained `17 -> 17`.
+- Package: `artifacts\packages\CodexUsageTrayLite-v0.2.22-win-x64.zip`; SHA-256 `13053bc6d156c6a2637d38a3c16913dd4def1a4ff740aa5a933ceed5e3702ae1`. The independent audit verified the 22-file allowlist, all 21 internal manifest hashes, external sidecar, EXE file version `0.2.22.0`, bilingual READMEs, source URL, complete changelog, and synchronized loose mirror.
+
+## 0.2.21 partial submenu parent-width correction - 2026-09-23
+
+- The official WinForms implementation positions a right-cascading submenu by adding the parent item's `Width` to its screen origin. Its `ToolStripDropDownMenu` sizing path calculates menu width from native text and secondary-text metrics rather than the custom `GetPreferredSize` width used in v0.2.19.
+- A before-fix regression run reproduced the defect: `TrayMenuReorganizationAndTheme` failed because the summary-bearing `UsageSource` item exceeded the native parent-menu overhang baseline. Removing the custom width addition and reserving summary width through the native secondary-text metric makes the same test pass.
+- The custom renderer suppresses the native secondary-text paint pass and draws the smaller summary exactly once; production WinForms renders under `artifacts\validation\menu-r3` confirm no duplicate summary in English/Simplified Chinese, Light/Dark, normal and 200%-font long-email cases.
+- The initial regression compared all five summary-bearing rows against a baseline that still had `ApplyMenuLayout` spacing. Target-machine verification found the resulting approximately 11-pixel residual gap; `0.2.22` replaces it with a truly unmodified native baseline.
+- The final packaging gate completed with 0 errors and only the two known restricted-network `NU1900` warnings, then passed 89 automated tests, 0 failed. The 100-session resource check finished at Handles `343 -> 340`; GDI objects remained `17 -> 17`.
+- Package: `artifacts\packages\CodexUsageTrayLite-v0.2.21-win-x64.zip`; SHA-256 `3e3f146db71bbb688c7f53acfcee74421716485924aefc49044d8dc5765a359b`. The independent audit verified the 22-file allowlist, all 21 internal manifest hashes, external sidecar, EXE file version `0.2.21.0`, bilingual READMEs, source URL, complete changelog, and synchronized loose mirror.
+
+## 0.2.20 attempted adjacent submenu placement - 2026-09-23
+
+- This version attempted an explicit `Right`/`Left` direction override. Target-machine verification showed the gap unchanged because the parent item width still exceeded the visible menu; the attempt is superseded by `0.2.21`.
+- The final packaging gate completed with 0 errors and only the two known restricted-network `NU1900` warnings, then passed all 89 automated tests, 0 failed. The 100-session resource check finished at Handles `338 -> 340`; GDI objects remained `18 -> 18`.
+- Package: `artifacts\packages\CodexUsageTrayLite-v0.2.20-win-x64.zip`; SHA-256 `f94ab8c1f0e046d5e1e621b4e8943b0e6c8593ffedbba8ac24a6c8106dbf18d1`. The independent audit verified the 22-file allowlist, all 21 internal manifest hashes, external sidecar, EXE file version `0.2.20.0`, bilingual READMEs, current source URL, full changelog, and synchronized loose mirror.
+- Windows Computer Use inventory failed after the documented retry and session reset (`apps=[]`, `nodeRepl.fetch request failed`). The fix therefore has build/test coverage but no live notification-area placement claim in this run; the target desktop should confirm the submenu touches the parent edge on both normal and screen-edge paths.
+
+## 0.2.19 tray-menu visual refinement R2 - 2026-09-23
+
+- `TrayMenuReorganizationAndTheme` verifies the unchanged 15-row hierarchy and command visibility plus the new 34-logical-pixel minimum row height, independent smaller summary font, separate secondary/disabled palette colors, rounded renderer, and summary text that no longer uses the shortcut-key column.
+- The production renderer keeps status hierarchy: primary account/quota rows use the main theme color, reset/update rows use the secondary color (`#535963` Light and `#C0C3CA` Dark), and genuinely disabled actions use the disabled color.
+- The renderer draws soft single separators, rounded selection highlights, a rounded painted border, theme-aware arrows, and a standalone check mark without the prior block background. Native `ContextMenuStrip` ownership, keyboard handling, submenus, and working-area height constraints remain unchanged.
+- `artifacts\validation\menu-r2` contains production WinForms offscreen renders for English and Simplified Chinese in Light and Dark, WebView2 and CLI, main/selected rows, Usage source, Refresh interval, Icon style, and Tools & Help submenus. Long-email variants exercise 125%, 150%, and 200% font scaling without clipping; these are font-scale simulations on the production controls, not actual per-monitor hardware-DPI captures.
+- The final packaging gate completed with 0 errors and only the two known restricted-network `NU1900` warnings, then passed all 89 automated tests, 0 failed. The 100-session resource check finished at Handles `343 -> 345`; GDI objects remained `18 -> 18`.
+- Package: `artifacts\packages\CodexUsageTrayLite-v0.2.19-win-x64.zip`; SHA-256 `8f105203eaf7a208890e67c1e3ff06863808232d08d8456aaaf30a6d89b975c6`. An independent audit verified the 22-file allowlist, all 21 internal manifest hashes, external sidecar, EXE file version `0.2.19.0`, both READMEs, dynamic source URL, complete changelog cutover, and the synchronized version-neutral loose mirror.
+- No authenticated account refresh, live notification-area menu interaction, physical 100%/125%/150%/200% monitor-DPI switch, or long-duration run is claimed for this menu-only change. Windows still controls the outer drop-down window shadow and final host-window corner behavior.
+
 ## 0.2.18 bilingual portable documentation and package consistency - 2026-09-23
 
 - The versioned package and GitHub release asset convention is `CodexUsageTrayLite-v<version>-win-x64.zip`; current and future package names must not contain `local`. Existing historical archives retain their original immutable names.

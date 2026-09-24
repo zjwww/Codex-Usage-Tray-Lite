@@ -28,14 +28,22 @@ to WebView2 reuses its saved login profile; the login window is needed only if
 that validation reports login-required. A CLI app-server process is used only
 while reading usage and is then closed. Refresh now can retry a missing or
 unsigned-in CLI; periodic refresh starts only after a successful read. Proxy
-settings and Clear login session apply only to WebView2. The Help item above
-About provides a short in-app summary of both source modes and the application's
-security and privacy boundaries.
+settings and Clear login session apply only to WebView2. Help provides a short
+in-app summary of both source modes and the application's security and privacy
+boundaries. Update opens the latest GitHub release in the default browser, and
+About shows the current application version in the menu's right-hand summary.
 
 Refresh interval
 ----------------
 Refresh interval offers 1, 2, 5, 10, 15, 30, and 60 minutes. The default
 remains 15 minutes; the shorter intervals are explicit opt-in choices.
+
+The native tray menu uses a minimum 34-logical-pixel row height, independent
+smaller right-aligned setting summaries, soft separators, rounded selection
+highlights, and clear check marks without block backgrounds. Primary account
+and quota rows remain high contrast while secondary status and disabled actions
+stay visually distinct. Submenus open immediately beside their parent menu and
+flip to the other side near a monitor edge. Keyboard navigation remains native.
 
 Icon style
 ----------

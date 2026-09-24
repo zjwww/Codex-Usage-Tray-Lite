@@ -4,10 +4,11 @@ namespace CodexUsageTrayLite
     {
         public const string Name = "Codex Usage Tray Lite";
         public const string AssemblyName = "CodexUsageTrayLite";
-        public const string Version = "0.2.18";
+        public const string Version = "0.2.26";
         public const string BaselineTag = "v2.0.0-preview.7";
         public const string BaselineCommit = "36e9679164dcd7e5ef23d1f35822664785fad01f";
         public const string UpstreamUrl = "https://github.com/saveway/codex-usage-monitor";
+        public const string LatestReleaseUrl = "https://github.com/zjwww/Codex-Usage-Tray-Lite/releases/latest";
         public const string UsageUrl = "https://chatgpt.com/codex/cloud/settings/analytics#usage";
         public const string RunValueName = "CodexUsageTrayLite";
         public const int DefaultRefreshMinutes = 15;

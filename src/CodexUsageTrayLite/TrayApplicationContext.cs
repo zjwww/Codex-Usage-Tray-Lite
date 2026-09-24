@@ -37,6 +37,7 @@ namespace CodexUsageTrayLite
         private readonly ToolStripMenuItem openLogsItem;
         private readonly ToolStripMenuItem openConfigItem;
         private readonly ToolStripMenuItem helpItem;
+        private readonly ToolStripMenuItem updateItem;
         private readonly ToolStripMenuItem aboutItem;
         private readonly ToolStripMenuItem toolsAndHelpMenuItem;
         private readonly ToolStripMenuItem exitItem;
@@ -124,11 +125,15 @@ namespace CodexUsageTrayLite
             openLogsItem = CreateMenuItem(ui.OpenLogs, (sender, args) => OpenLogFile(), "OpenLogs");
             openConfigItem = CreateMenuItem(ui.OpenConfig, (sender, args) => OpenFolder(AppPaths.DataDirectory), "OpenConfig");
             helpItem = CreateMenuItem(ui.Help, (sender, args) => ShowHelp(), "Help");
+            updateItem = CreateMenuItem(ui.Update, (sender, args) => OpenLatestRelease(), "Update");
+            SetSummaryText(updateItem, "GitHub");
             aboutItem = CreateMenuItem(ui.About, (sender, args) => ShowAbout(), "About");
+            SetSummaryText(aboutItem, "v" + AppConstants.Version);
             toolsAndHelpMenuItem.DropDownItems.Add(openLogsItem);
             toolsAndHelpMenuItem.DropDownItems.Add(openConfigItem);
             toolsAndHelpMenuItem.DropDownItems.Add(new ToolStripSeparator());
             toolsAndHelpMenuItem.DropDownItems.Add(helpItem);
+            toolsAndHelpMenuItem.DropDownItems.Add(updateItem);
             toolsAndHelpMenuItem.DropDownItems.Add(aboutItem);
             menu.Items.Add(toolsAndHelpMenuItem);
             menu.Items.Add(new ToolStripSeparator());
@@ -138,6 +143,7 @@ namespace CodexUsageTrayLite
             ApplyTheme(settings.themeMode, false);
             menu.Opening += (sender, args) =>
             {
+                ThemeService.ApplyMenuLayout(menu);
                 ApplyMenuWorkingAreaLimit(menu, Screen.FromPoint(Cursor.Position).WorkingArea);
                 RefreshMenuState();
             };
@@ -352,6 +358,7 @@ namespace CodexUsageTrayLite
             openLogsItem.Text = ui.OpenLogs;
             openConfigItem.Text = ui.OpenConfig;
             helpItem.Text = ui.Help;
+            updateItem.Text = ui.Update;
             aboutItem.Text = ui.About;
             exitItem.Text = ui.Exit;
             sourceItems[UsageSource.WebView2].Text = ui.UsageSourceWebView2;
@@ -950,6 +957,33 @@ namespace CodexUsageTrayLite
                 FileName = System.IO.Path.GetFullPath(path),
                 UseShellExecute = true
             };
+        }
+
+        internal static ProcessStartInfo CreateExternalUrlOpenStartInfo(string url)
+        {
+            Uri parsed;
+            if (!Uri.TryCreate(url, UriKind.Absolute, out parsed) ||
+                !string.Equals(parsed.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+                throw new ArgumentException("An absolute HTTPS URL is required.", "url");
+            return new ProcessStartInfo
+            {
+                FileName = parsed.AbsoluteUri,
+                UseShellExecute = true
+            };
+        }
+
+        private void OpenLatestRelease()
+        {
+            try
+            {
+                SafeLogger.Write("Update.OpenRequested", "destination=GitHubLatestRelease");
+                Process.Start(CreateExternalUrlOpenStartInfo(AppConstants.LatestReleaseUrl));
+            }
+            catch (Exception ex)
+            {
+                SafeLogger.Write("Update.OpenFailed", ex.GetType().Name + ": " + ex.Message);
+                ShowMessage(ui.UpdateOpenFailed, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private DialogResult ShowMessage(string message, MessageBoxButtons buttons, MessageBoxIcon icon)
