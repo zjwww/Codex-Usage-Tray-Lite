@@ -26,6 +26,10 @@ namespace CodexUsageTrayLite.UI
             : base(text)
         {
             TextRole = textRole;
+            // ToolStripDropDownMenu can request a second text-render pass for the
+            // shortcut column even when it is empty. Keep that pass disabled until
+            // SummaryText deliberately uses the native shortcut column for sizing.
+            ShowShortcutKeys = false;
         }
 
         public TrayMenuTextRole TextRole { get; private set; }

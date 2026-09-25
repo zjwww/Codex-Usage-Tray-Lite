@@ -161,15 +161,21 @@ namespace CodexUsageTrayLite.Tests
             Test("StartupPathQuoting", StartupPathQuoting);
             Test("SafeLoggerRedaction", SafeLoggerRedaction);
             Test("LogEventLevelAndFormat", LogEventLevelAndFormat);
+            Test("RefreshSuccessLogFormatting", RefreshSuccessLogFormatting);
             Test("UsageFieldUnavailableDiagnostics", UsageFieldUnavailableDiagnostics);
             Test("LogDailyRotation", LogDailyRotation);
             Test("LogFileOpenLaunch", LogFileOpenLaunch);
             Test("ExternalUrlOpenLaunch", ExternalUrlOpenLaunch);
+            Test("CommandLineParsingAndStatus", CommandLineParsingAndStatus);
+            Test("SingleInstanceCommandChannel", SingleInstanceCommandChannelContract);
+            Test("CommandLineExecutableOutput", CommandLineExecutableOutput);
             await TestAsync("RefreshConcurrency", RefreshConcurrency);
             await TestAsync("RefreshCancellation", RefreshCancellation);
             await TestAsync("RepeatedRefreshLifecycle100", RepeatedRefreshLifecycle100);
             Test("TrayMenuReorganizationAndTheme", TrayMenuReorganizationAndTheme);
             Test("TrayMenuTextAlignmentContract", TrayMenuTextAlignmentContract);
+            Test("TrayMenuTextSinglePassContract", TrayMenuTextSinglePassContract);
+            Test("TrayMenuRoundedWindowRegion", TrayMenuRoundedWindowRegion);
             Test("GdiIconLifecycle", GdiIconLifecycle);
             Test("ThemeControlApplication", ThemeControlApplication);
             Test("ProxyDialogLayoutAndDirectOption", ProxyDialogLayoutAndDirectOption);
@@ -1395,6 +1401,81 @@ namespace CodexUsageTrayLite.Tests
                 "Read-only tray-menu labels may accidentally treat ampersands as access keys.");
         }
 
+        private static void TrayMenuTextSinglePassContract()
+        {
+            using (var menu = new ContextMenuStrip())
+            {
+                var status = new TrayMenuItem("Weekly 81%", TrayMenuTextRole.PrimaryStatus);
+                menu.Items.Add(status);
+                True(!status.ShowShortcutKeys, "Status rows unexpectedly request an empty shortcut-column render pass.");
+                True(ThemeService.ShouldRenderTrayMenuItemText(status, status.Text), "The status label render pass was rejected.");
+                True(!ThemeService.ShouldRenderTrayMenuItemText(status, string.Empty),
+                    "An empty shortcut-column callback would repaint the status label.");
+
+                ThemeService.ApplyToMenu(menu, AppThemeMode.Dark);
+                using (var expected = CaptureToolStripBitmap(menu))
+                {
+                    // Re-enable the framework's empty shortcut callback deliberately.
+                    // The renderer guard must still keep the final pixels unchanged.
+                    status.ShowShortcutKeys = true;
+                    using (var actual = CaptureToolStripBitmap(menu))
+                    {
+                        Equal(expected.Height, actual.Height);
+                        var comparisonWidth = Math.Max(1, Math.Min(expected.Width, actual.Width) - 20);
+                        Equal(BitmapRegionHash(expected, new Rectangle(0, 0, comparisonWidth, expected.Height)),
+                            BitmapRegionHash(actual, new Rectangle(0, 0, comparisonWidth, actual.Height)));
+                    }
+                }
+
+                status.SummaryText = "Pro";
+                True(status.ShowShortcutKeys, "Summary text no longer reserves native secondary-column width.");
+                True(!ThemeService.ShouldRenderTrayMenuItemText(status, status.SummaryText),
+                    "The native summary callback would repaint the custom row.");
+                status.SummaryText = string.Empty;
+                True(!status.ShowShortcutKeys, "Clearing summary text did not disable the shortcut-column render pass.");
+            }
+        }
+
+        private static void TrayMenuRoundedWindowRegion()
+        {
+            var before = GetGuiResources(Process.GetCurrentProcess().Handle, 0);
+            for (var index = 0; index < 40; index++)
+            {
+                using (var menu = new ContextMenuStrip())
+                {
+                    var parent = new TrayMenuItem("Theme");
+                    parent.DropDownItems.Add(new TrayMenuItem("Dark"));
+                    menu.Items.Add(parent);
+                    ThemeService.ApplyToMenu(menu, index % 2 == 0 ? AppThemeMode.Dark : AppThemeMode.Light);
+                    SetToolStripToPreferredSize(menu);
+                    SetToolStripToPreferredSize(parent.DropDown);
+
+                    AssertRoundedRegion(menu, "main menu");
+                    AssertRoundedRegion(parent.DropDown, "submenu");
+
+                    menu.Size = new Size(menu.Width + 7, menu.Height + 3);
+                    AssertRoundedRegion(menu, "resized main menu");
+
+                    ThemeService.ConfigureMenuWindowRegion(menu, false);
+                    True(menu.Region == null, "Square/high-contrast menu retained a custom rounded window region.");
+                    ThemeService.ConfigureMenuWindowRegion(menu, true);
+                    AssertRoundedRegion(menu, "restored main menu");
+                }
+            }
+            var after = GetGuiResources(Process.GetCurrentProcess().Handle, 0);
+            True(after <= before + 4, "Menu-region GDI objects grew unexpectedly: " + before + " -> " + after);
+        }
+
+        private static void AssertRoundedRegion(ToolStrip menu, string description)
+        {
+            True(menu.Region != null, description + " has no window clipping region.");
+            True(!menu.Region.IsVisible(0, 0), description + " still includes its rectangular top-left corner.");
+            True(!menu.Region.IsVisible(Math.Max(0, menu.Width - 1), 0),
+                description + " still includes its rectangular top-right corner.");
+            True(menu.Region.IsVisible(menu.Width / 2, menu.Height / 2),
+                description + " clipping region excludes its center.");
+        }
+
         private static int RenderMenuR2(string outputDirectory)
         {
             Directory.CreateDirectory(outputDirectory);
@@ -1458,6 +1539,24 @@ namespace CodexUsageTrayLite.Tests
                 bitmap.Save(path, ImageFormat.Png);
             }
             toolStrip.AutoSize = true;
+        }
+
+        private static Bitmap CaptureToolStripBitmap(ToolStrip toolStrip)
+        {
+            var originalAutoSize = toolStrip.AutoSize;
+            SetToolStripToPreferredSize(toolStrip);
+            var bitmap = new Bitmap(toolStrip.Width, toolStrip.Height, PixelFormat.Format32bppArgb);
+            toolStrip.DrawToBitmap(bitmap, new Rectangle(Point.Empty, toolStrip.Size));
+            toolStrip.AutoSize = originalAutoSize;
+            return bitmap;
+        }
+
+        private static void SetToolStripToPreferredSize(ToolStrip toolStrip)
+        {
+            toolStrip.PerformLayout();
+            var size = toolStrip.GetPreferredSize(Size.Empty);
+            toolStrip.AutoSize = false;
+            toolStrip.Size = new Size(Math.Max(2, size.Width), Math.Max(2, size.Height));
         }
 
         private static AppSettings CreateMenuTestSettings(AppLanguage language, AppThemeMode theme, UsageSource source)
@@ -2451,6 +2550,42 @@ namespace CodexUsageTrayLite.Tests
                 "Structured log line contains an unmasked email.");
         }
 
+        private static void RefreshSuccessLogFormatting()
+        {
+            var fetchedAt = new DateTime(2026, 9, 25, 15, 22, 0, DateTimeKind.Local);
+            var snapshot = new UsageSnapshot
+            {
+                userLevel = UserLevel.Pro,
+                fiveHourLimitApplies = false,
+                weeklyRemainingPercent = 39,
+                weeklyResetAt = new DateTime(2026, 9, 26, 16, 12, 0, DateTimeKind.Local),
+                availableUsageResetCount = 1,
+                lastSuccessfulFetchAt = fetchedAt
+            };
+            var details = RefreshSuccessLogFormatter.Format(
+                snapshot,
+                UsageSource.WebView2,
+                "alex@example.test",
+                TimeSpan.FromMilliseconds(1234));
+            var line = SafeLogger.FormatLine(fetchedAt, LogEventLevel.Info, "Refresh.Success", details);
+            True(line.Contains("level=info | event=Refresh.Success"), "Refresh success does not use the structured info event.");
+            True(line.Contains("source=WebView2") && line.Contains("email=a***@example.test") &&
+                !line.Contains("alex@example.test"), "Refresh success did not use the shared masked-email rule.");
+            True(line.Contains("userLevel=Pro") && line.Contains("fiveHourRemaining=N/A") &&
+                line.Contains("fiveHourResetAt=N/A"), "Weekly-only account fields are incomplete.");
+            True(line.Contains("weeklyRemaining=39%") && line.Contains("weeklyResetAt=2026-09-26T16:12:00") &&
+                line.Contains("usageResets=1") && line.Contains("fetchedAt=2026-09-25T15:22:00") &&
+                line.Contains("durationMs=1234"), "Refresh success is missing menu-equivalent usage fields.");
+
+            snapshot.userLevel = UserLevel.Plus;
+            snapshot.fiveHourLimitApplies = true;
+            snapshot.fiveHourRemainingPercent = 71;
+            snapshot.fiveHourResetAt = fetchedAt.AddHours(3);
+            details = RefreshSuccessLogFormatter.Format(snapshot, UsageSource.CodexCli, null, TimeSpan.Zero);
+            True(details.Contains("source=CodexCli") && details.Contains("email=unavailable") &&
+                details.Contains("fiveHourRemaining=71%"), "Applicable 5-Hour success fields are incomplete.");
+        }
+
         private static void UsageFieldUnavailableDiagnostics()
         {
             Equal(LogEventLevel.Warning, SafeLogger.InferLevel(UsageFieldTelemetry.EventName));
@@ -2544,6 +2679,129 @@ namespace CodexUsageTrayLite.Tests
             True(startInfo.UseShellExecute, "The release page is not opened through the Windows URL association.");
             Throws<ArgumentException>(() => TrayApplicationContext.CreateExternalUrlOpenStartInfo("http://example.test/release"));
             Throws<ArgumentException>(() => TrayApplicationContext.CreateExternalUrlOpenStartInfo("not-a-url"));
+        }
+
+        private static void CommandLineParsingAndStatus()
+        {
+            Equal(CommandLineVerb.Run, CommandLineRequest.Parse(new string[0]).Verb);
+            Equal(CommandLineVerb.Run, CommandLineRequest.Parse(new[] { "--startup" }).Verb);
+            Equal(CommandLineVerb.Help, CommandLineRequest.Parse(new[] { "-help" }).Verb);
+            Equal(CommandLineVerb.Help, CommandLineRequest.Parse(new[] { "/?" }).Verb);
+            Equal(CommandLineVerb.Version, CommandLineRequest.Parse(new[] { "--version" }).Verb);
+            Equal(CommandLineVerb.Status, CommandLineRequest.Parse(new[] { "-status" }).Verb);
+            Equal(CommandLineVerb.Refresh, CommandLineRequest.Parse(new[] { "-refresh" }).Verb);
+            Equal(CommandLineVerb.Exit, CommandLineRequest.Parse(new[] { "-exit" }).Verb);
+            Equal(CommandLineVerb.Exit, CommandLineRequest.Parse(new[] { "-quit" }).Verb);
+            Equal(CommandLineVerb.LogPath, CommandLineRequest.Parse(new[] { "-log-path" }).Verb);
+            Equal(CommandLineVerb.ConfigPath, CommandLineRequest.Parse(new[] { "-config-path" }).Verb);
+            Equal(CommandLineVerb.Invalid, CommandLineRequest.Parse(new[] { "-unknown" }).Verb);
+            Equal(CommandLineVerb.Invalid, CommandLineRequest.Parse(new[] { "-help", "-version" }).Verb);
+            True(CommandLineInterface.IsRestorablePromptPrefix("C:\\Work>"), "Default Command Prompt prefix was not restorable.");
+            True(CommandLineInterface.IsRestorablePromptPrefix("PS C:\\Work> "), "Default PowerShell prefix was not restorable.");
+            True(!CommandLineInterface.IsRestorablePromptPrefix("CodexUsageTrayLite.exe -help"), "A command line was mistaken for a shell prompt.");
+            True(!CommandLineInterface.IsRestorablePromptPrefix("C:\\Work>\r\n"), "A control-character prompt was accepted.");
+            True(CommandLineInterface.CanClearPromptLine("C:\\Work>", "C:\\Work>", 8, 8, 4, 4),
+                "An unchanged single-line prompt could not be cleared in place.");
+            True(!CommandLineInterface.CanClearPromptLine("C:\\Work>", "C:\\Work>x", 8, 9, 4, 4),
+                "Typed input did not block in-place prompt clearing.");
+            True(!CommandLineInterface.CanClearPromptLine("C:\\Work>", "C:\\Work>", 8, 8, 4, 5),
+                "A moved prompt row did not block in-place clearing.");
+            Equal(3, CommandLineInterface.SelectInteractiveOutputRow(4, 0, true));
+            Equal(4, CommandLineInterface.SelectInteractiveOutputRow(4, 0, false));
+            Equal(4, CommandLineInterface.SelectInteractiveOutputRow(4, 4, true));
+
+            var help = CommandLineInterface.HelpText;
+            foreach (var option in new[] { "-help", "-version", "-status", "-refresh", "-exit", "-quit", "-log-path", "-config-path" })
+                True(help.Contains(option), "English help omits " + option + ".");
+
+            var settings = AppSettings.CreateDefault();
+            settings.setupComplete = true;
+            settings.loginRequired = false;
+            settings.usageSource = UsageSource.WebView2;
+            settings.lastSuccessfulUsageSource = UsageSource.WebView2;
+            settings.lastSuccessfulUsage = new UsageSnapshot
+            {
+                userLevel = UserLevel.Pro,
+                fiveHourLimitApplies = false,
+                weeklyRemainingPercent = 39,
+                weeklyResetAt = new DateTime(2026, 9, 26, 16, 12, 0, DateTimeKind.Local),
+                availableUsageResetCount = 1,
+                lastSuccessfulFetchAt = new DateTime(2026, 9, 25, 15, 22, 0, DateTimeKind.Local)
+            };
+            var status = CommandLineInterface.FormatSavedStatus(settings);
+            True(status.Contains("Status: Saved usage available") && status.Contains("Source: WebView2"),
+                "Saved status lacks its state or source.");
+            True(status.Contains("User level: Pro") && status.Contains("5-Hour: N/A") &&
+                status.Contains("Weekly: 39%") && status.Contains("Usage resets: 1") &&
+                status.Contains("Last updated: 2026-09-25 15:22:00"), "Saved status lacks expected usage fields.");
+        }
+
+        private static void SingleInstanceCommandChannelContract()
+        {
+            var channelId = "CodexUsageTrayLiteTests" + Guid.NewGuid().ToString("N");
+            var received = new List<SingleInstanceCommand>();
+            using (var signal = new AutoResetEvent(false))
+            using (var channel = new SingleInstanceCommandChannel(command =>
+            {
+                lock (received) received.Add(command);
+                signal.Set();
+            }, channelId))
+            {
+                True(SingleInstanceCommandChannel.TrySend(SingleInstanceCommand.Refresh, TimeSpan.FromSeconds(1), channelId),
+                    "Refresh signal could not reach the running-instance channel.");
+                True(signal.WaitOne(TimeSpan.FromSeconds(2)), "Refresh signal was not dispatched.");
+                True(SingleInstanceCommandChannel.TrySend(SingleInstanceCommand.Exit, TimeSpan.FromSeconds(1), channelId),
+                    "Exit signal could not reach the running-instance channel.");
+                True(signal.WaitOne(TimeSpan.FromSeconds(2)), "Exit signal was not dispatched.");
+                lock (received)
+                {
+                    Equal(2, received.Count);
+                    Equal(SingleInstanceCommand.Refresh, received[0]);
+                    Equal(SingleInstanceCommand.Exit, received[1]);
+                }
+            }
+            True(!SingleInstanceCommandChannel.TrySend(SingleInstanceCommand.Refresh, TimeSpan.Zero, channelId),
+                "Disposed command channel remained reachable.");
+        }
+
+        private static void CommandLineExecutableOutput()
+        {
+            var executable = typeof(AppConstants).Assembly.Location;
+            True(executable.EndsWith(".exe", StringComparison.OrdinalIgnoreCase), "Application reference is not an executable: " + executable);
+            var version = RunCommandLineExecutable(executable, "-version");
+            Equal(0, version.ExitCode);
+            Equal(AppConstants.Name + " " + AppConstants.Version, version.StandardOutput.Trim());
+            Equal(string.Empty, version.StandardError.Trim());
+
+            var help = RunCommandLineExecutable(executable, "-help");
+            Equal(0, help.ExitCode);
+            True(help.StandardOutput.Contains("Usage: CodexUsageTrayLite.exe [option]") &&
+                help.StandardOutput.Contains("-refresh") && help.StandardOutput.Contains("-quit"),
+                "Packaged WinExe help did not reach redirected stdout.");
+
+            var invalid = RunCommandLineExecutable(executable, "-does-not-exist");
+            Equal(64, invalid.ExitCode);
+            True(invalid.StandardError.Contains("Unknown command-line option"), "Invalid option did not reach redirected stderr.");
+        }
+
+        private static CommandLineProcessResult RunCommandLineExecutable(string executable, string arguments)
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = executable,
+                Arguments = arguments,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            };
+            using (var process = Process.Start(startInfo))
+            {
+                var output = process.StandardOutput.ReadToEnd();
+                var error = process.StandardError.ReadToEnd();
+                True(process.WaitForExit(5000), "Command-line process did not exit: " + arguments);
+                return new CommandLineProcessResult(process.ExitCode, output, error);
+            }
         }
 
         private static void LogDailyRotation()
@@ -2672,6 +2930,15 @@ namespace CodexUsageTrayLite.Tests
             return hash;
         }
 
+        private static long BitmapRegionHash(Bitmap bitmap, Rectangle rectangle)
+        {
+            long hash = 17;
+            var bounds = Rectangle.Intersect(new Rectangle(Point.Empty, bitmap.Size), rectangle);
+            for (var y = bounds.Top; y < bounds.Bottom; y++)
+                for (var x = bounds.Left; x < bounds.Right; x++) hash = unchecked(hash * 31 + bitmap.GetPixel(x, y).ToArgb());
+            return hash;
+        }
+
         private static void Test(string name, Action action)
         {
             try { action(); passed++; Console.WriteLine("PASS " + name); }
@@ -2710,6 +2977,20 @@ namespace CodexUsageTrayLite.Tests
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool DestroyIcon(IntPtr iconHandle);
+
+        private sealed class CommandLineProcessResult
+        {
+            public CommandLineProcessResult(int exitCode, string standardOutput, string standardError)
+            {
+                ExitCode = exitCode;
+                StandardOutput = standardOutput ?? string.Empty;
+                StandardError = standardError ?? string.Empty;
+            }
+
+            public int ExitCode { get; private set; }
+            public string StandardOutput { get; private set; }
+            public string StandardError { get; private set; }
+        }
 
         private sealed class FakeSessionFactory : IUsageFetchSessionFactory
         {

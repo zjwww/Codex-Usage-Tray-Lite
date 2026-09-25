@@ -1,4 +1,4 @@
-Codex Usage Tray Lite {{VERSION}}
+Codex Usage Tray Lite {{PACKAGE_VERSION}}
 ================================
 
 Windows x64 便携软件包。本项目是 saveway/codex-usage-monitor 的非官方社区衍生版本，
@@ -13,6 +13,17 @@ Windows x64 便携软件包。本项目是 saveway/codex-usage-monitor 的非官
 英文完整说明见 README.txt、RELEASE_NOTES.md 和 CHANGELOG.md。
 简体中文发布说明与完整更新历史分别为 RELEASE_NOTES.zh-CN.md 和 CHANGELOG.zh-CN.md。
 
+版本历史
+--------
+CHANGELOG.md 与 CHANGELOG.zh-CN.md 中，GitHub 已公开发布版本使用 x.y.z，
+从未公开发布的本地迭代使用 x.y.z-local。每次 GitHub 发布前，维护者须依据实际
+Release 历史核对全部版本标题并同步更新两份 README，在创建不可变 ZIP 前完成
+包内文档定稿。获准发布的目标可在准备阶段使用公开标题。程序版本仍为纯数字。
+本地包使用 CodexUsageTrayLite-v<版本>-local-win-x64.zip；获准发布的正式包
+单独生成为 CodexUsageTrayLite-v<版本>-win-x64.zip，包含审核后的文档。
+保留本地候选包，两类包均不覆盖既有文件。本地候选包可能包含尚未同步到 GitHub 的修改。
+公开版本：https://github.com/zjwww/Codex-Usage-Tray-Lite/releases
+
 用量来源
 --------
 托盘菜单的“用量来源”可选择 WebView2 或 Codex CLI，默认使用 WebView2。
@@ -25,6 +36,27 @@ Codex CLI 模式要求本机已安装 Codex CLI，并已通过 ChatGPT 登录；
 代理设置和“清除 WebView2 登录会话”仅适用于 WebView2。“帮助”会简要说明两种来源模式以及
 本程序的安全与隐私边界；“更新”会通过默认浏览器打开 GitHub 最新版本页面；“关于”右侧会显示
 当前程序版本号。
+
+命令行
+------
+命令行输出仅提供英文。不带参数启动 EXE 时保持正常通知区域行为；每次调用只使用一个参数：
+
+  -help, -h, -?       显示命令行帮助。
+  -version, -v        输出程序版本。
+  -status             输出上次保存的快照，不执行刷新。
+  -refresh            请求已运行的托盘实例立即刷新。
+  -exit, -quit        请求已运行的托盘实例正常退出。
+  -log-path           输出当前日志文件路径。
+  -config-path        输出本地应用数据／配置目录。
+
+-refresh 与 -exit/-quit 需要同一 Windows 会话中存在可响应的托盘实例，否则返回退出代码 2；
+参数无效时返回 64。EXE 仍为 Windows GUI 子系统程序，正常启动托盘时不会闪出控制台。
+直接在交互式命令提示符或 PowerShell 中运行时，程序会原位清除未变化的提前提示符。若其正上方
+完整可见的 CMD 间隔行仍为空白，输出会安全复用该行，使结果紧接命令显示；结果与恢复后的提示符
+之间保留一个空行。不会注入 Enter 或其他按键。提示符变化或不受支持时会使用安全换行后备。
+脚本需要严格排序时仍应通过 Start-Process -NoNewWindow -Wait 等方式显式等待此 GUI
+进程；通过进程 API 重定向时可正常取得 stdout／stderr 与退出代码。
+“开机启动”使用的内部 --startup 参数也可手动运行，但效果等同于正常不带参数启动托盘。
 
 刷新间隔
 --------
@@ -97,7 +129,9 @@ WebView2 Runtime。这两个 Microsoft 系统组件不会嵌入此便携 ZIP；C
 
 完整账号邮箱只保留在进程内存中，不会写入设置或日志。日志使用结构化的
 level=info|warning|error 与 event 字段；成功读取身份时只记录固定格式的脱敏邮箱。
-“打开日志”还会记录不含用量数值的进程生命周期诊断。Codex CLI 日志会说明 stdin 关闭是否正常，
+每次刷新成功会增加一条 Refresh.Success 日志，包含数据源、脱敏邮箱、受支持的用户等级、
+5-Hour／Weekly 数值及重置时间、可用用量重置次数、获取时间和耗时；缺失值会明确记录为
+Unknown 或 N/A。Codex CLI 日志会说明 stdin 关闭是否正常，
 或是否仅对本程序准确启动的进程使用了超时 Kill／Job 后备。WebView2 日志分别记录控制器 Close、
 意外进程失败详情，以及 Runtime 实际触发的 BrowserProcessExited 事件；本程序不会结束 WebView2 进程。
 
@@ -118,4 +152,4 @@ SHA256SUMS.txt 覆盖包内每个应用文件；ZIP 旁对应的 .zip.sha256 文
 文档中要求的 8–12 小时自然间隔 WebView2 持续测试，在公开分发前仍作为发布验证门槛。
 本版本不包含桌面 Widget、Windows toast／气泡通知、遥测、自动更新、安装器、云端后端或凭据提取。
 
-对应源码：https://github.com/zjwww/Codex-Usage-Tray-Lite/tree/v{{VERSION}}
+源码仓库／发布标签：{{SOURCE_URL}}

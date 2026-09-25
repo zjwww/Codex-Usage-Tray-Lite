@@ -1,4 +1,4 @@
-Codex Usage Tray Lite {{VERSION}}
+Codex Usage Tray Lite {{PACKAGE_VERSION}}
 ================================
 
 Portable Windows x64 package. This is an unofficial community derivative of
@@ -16,6 +16,20 @@ For a complete Simplified Chinese package guide, start with README.zh-CN.txt.
 The Simplified Chinese release documents are RELEASE_NOTES.zh-CN.md and
 CHANGELOG.zh-CN.md.
 
+Version history
+---------------
+CHANGELOG.md and CHANGELOG.zh-CN.md use x.y.z for GitHub-published versions and
+x.y.z-local for local iterations that were never published. Before each GitHub
+publication, maintainers reconcile the full history and both READMEs with actual
+GitHub Releases and finalize package documentation before creating the immutable
+ZIP. The authorized target may use its public heading during preparation. This
+marker does not change the numeric application version. Local packages use
+CodexUsageTrayLite-v<version>-local-win-x64.zip; authorized GitHub packages are
+created separately as CodexUsageTrayLite-v<version>-win-x64.zip with reviewed
+documentation. Retain local candidates; neither channel overwrites an existing
+package. A local candidate may contain changes not yet on GitHub.
+Public releases: https://github.com/zjwww/Codex-Usage-Tray-Lite/releases
+
 Usage source
 ------------
 The tray menu offers Usage source > WebView2 or Codex CLI. WebView2 is the
@@ -32,6 +46,32 @@ settings and Clear login session apply only to WebView2. Help provides a short
 in-app summary of both source modes and the application's security and privacy
 boundaries. Update opens the latest GitHub release in the default browser, and
 About shows the current application version in the menu's right-hand summary.
+
+Command line
+------------
+Command output is English only. Starting the EXE without an option keeps the
+normal notification-area behavior. Use one option per invocation:
+
+  -help, -h, -?       Show command-line help.
+  -version, -v        Print the application version.
+  -status             Print the last saved snapshot without refreshing.
+  -refresh            Ask the running tray instance to refresh now.
+  -exit, -quit        Ask the running tray instance to exit cleanly.
+  -log-path           Print the current log-file path.
+  -config-path        Print the local application data/configuration directory.
+
+-refresh and -exit/-quit require a responsive tray instance in the same Windows
+session; they return exit code 2 otherwise. Invalid syntax returns 64. The EXE
+remains a Windows GUI-subsystem application so ordinary tray startup never
+flashes a console. In direct interactive Command Prompt and PowerShell use, an
+unchanged prematurely rendered prompt is cleared in place. A completely blank
+visible CMD spacer row immediately above it is safely reused so output directly
+follows the command; one empty line separates the result from the restored
+prompt. No Enter or other key is injected, and changed or unsupported prompts use a safe newline fallback. Scripts must
+still wait for this GUI process explicitly when sequencing commands, for example
+with Start-Process -NoNewWindow -Wait. Redirected process APIs receive stdout,
+stderr, and exit codes normally. The internal --startup argument used by Start
+at login is safe to run manually but equals a normal no-option tray launch.
 
 Refresh interval
 ----------------
@@ -132,9 +172,11 @@ Runtime data is created only under:
 
 The full account email is held in process memory only and is never written to
 settings or logs. Logs use structured level=info|warning|error and event fields;
-successful identity reads record only a fixed masked address. Open
-logs also records process-lifecycle diagnostics without quota values. Codex CLI
-entries show whether stdin shutdown was graceful or whether
+successful identity reads record only a fixed masked address. Every successful
+refresh adds one Refresh.Success line with source, masked email, supported user
+level, 5-Hour/Weekly values and reset times, available usage-reset count,
+fetched time, and duration; unavailable values are explicit Unknown or N/A.
+Codex CLI entries show whether stdin shutdown was graceful or whether
 the exact launched process required the timed Kill/Job fallback. WebView2
 entries separately show controller Close, unexpected process failure details,
 and the runtime's actual BrowserProcessExited event; this app never kills a
@@ -165,4 +207,4 @@ before public distribution. This build has no desktop Widget, Windows
 toast/balloon notification, telemetry, auto-update, installer, cloud backend,
 or credential extraction.
 
-Corresponding source: https://github.com/zjwww/Codex-Usage-Tray-Lite/tree/v{{VERSION}}
+Source repository / release tag: {{SOURCE_URL}}

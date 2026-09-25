@@ -1,0 +1,23 @@
+# Codex Usage Tray Lite maintenance rules
+
+- Treat every completed user-visible update as a new local version. Increment `Version`, `AssemblyVersion`, `FileVersion`, and `InformationalVersion` in `src/CodexUsageTrayLite/CodexUsageTrayLite.csproj`, and keep `AppConstants.Version` identical.
+- After local implementation and tests are complete, run `scripts/package-release.ps1` (default local channel). Deliver the resulting ZIP and `.zip.sha256` from `artifacts/packages`. Only after explicit GitHub publication authorization and documentation reconciliation, run `scripts/package-release.ps1 -GitHubRelease` to create a separate formal package for the same application version.
+- Local archives use `CodexUsageTrayLite-v<version>-local-win-x64.zip`; authorized GitHub-release archives use `CodexUsageTrayLite-v<version>-win-x64.zip`. Each channel's package is immutable. Keep the local candidate when creating its formal counterpart. Never upload a local archive as the formal asset. Application version fields stay numeric without `-local`.
+- Every ZIP must include `README.txt`, `README.zh-CN.txt`, the complete `CHANGELOG.md` and `CHANGELOG.zh-CN.md`, and both release-note files. Changelog headings must reflect actual GitHub Release history: published versions use `x.y.z`; versions never publicly released use `x.y.z-local`, regardless of their number. This marker does not change application versions or archive filenames.
+- Before every GitHub publication, read the actual GitHub Release history, reconcile every version heading in both changelogs, and update both READMEs and package documentation before creating the immutable package. The explicitly authorized target may use its public heading during preparation; do not describe it as already published. If corrected documentation conflicts with an existing immutable package, stop publication and obtain the user's decision; never silently overwrite the package or bump the version.
+- Never overwrite, rename, or delete an older package merely to reuse its version. The packaging script fails if that version's package already exists in the requested channel; increment the version for another local iteration. One-time user-authorized migration on 2026-09-25: rename the previously unmarked v0.3.1 candidate and its sidecar to the local naming convention, preserving ZIP bytes and updating the filename inside the sidecar. All other historical archives and public assets keep their existing names and bytes.
+- Keep packaging allowlist-only. Do not ship PDBs, profiles, settings, logs, dumps, secrets, tokens, cookies, environment files, or repository build tools.
+- Store bilingual Markdown as separate language files: the base `.md` filename is English and the matching Simplified Chinese file uses `.zh-CN.md` before the extension (for example, `CHANGELOG.md` and `CHANGELOG.zh-CN.md`). Never mix both languages in one Markdown file.
+- Report the package path, automated test count, and ZIP SHA-256 in the handoff.
+
+## Multi-chat workflow
+
+- Four Codex chats may share this local working directory. Their titles are coordination labels only; the current user request and the chat's assigned scope remain authoritative.
+- `CUTL-01 产品讨论与分析（只读）` is read-only by default. It may inspect code and logs and should produce an implementation brief, but must not modify files, build, bump versions, package, commit, push, tag, or publish unless the user explicitly expands its scope.
+- `CUTL-02 功能开发与更新` implements approved functional changes, runs proportional tests, updates versions and release documentation, and creates versioned local packages.
+- `CUTL-03 图标与界面样式` handles tray icons, menus, dialogs, themes, DPI, and visual previews. It must not change functional behavior without first reporting the impact. Approved user-visible implementations still follow the version, test, and packaging rules above, or are handed off to `CUTL-02`.
+- `CUTL-04 GitHub 发布与更新` handles Git history, branches, commits, tags, pushes, GitHub releases, and release-asset publication. It must not implement unrelated product changes and must publish only explicitly approved, already-tested packages after verifying version, checksums, and repository state.
+- Only one write-capable chat may modify project files, build, package, or publish at a time. Analysis-only work may run in parallel.
+- Before any write, build, package, or Git/GitHub operation, inspect the current working tree and preserve changes made by other chats.
+- A cross-chat handoff should state the objective, in-scope and out-of-scope work, acceptance criteria, relevant files, risks, and required tests.
+- A chat title never grants permission for destructive or external publication actions; those still require an explicit user request.

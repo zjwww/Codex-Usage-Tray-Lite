@@ -232,6 +232,43 @@ namespace CodexUsageTrayLite
             RefreshMenuState();
         }
 
+        internal void PostSingleInstanceCommand(SingleInstanceCommand command)
+        {
+            if (!runtimeActive || disposed || exiting || menu.IsDisposed || !menu.IsHandleCreated) return;
+            try
+            {
+                menu.BeginInvoke(new Action(() => HandleSingleInstanceCommand(command)));
+            }
+            catch (Exception ex)
+            {
+                SafeLogger.Write("Command.DispatchFailed", "command=" + command + " error=" + ex.GetType().Name);
+            }
+        }
+
+        private async void HandleSingleInstanceCommand(SingleInstanceCommand command)
+        {
+            if (disposed || exiting) return;
+            try
+            {
+                if (command == SingleInstanceCommand.Refresh)
+                {
+                    var accepted = StartRefresh(true);
+                    SafeLogger.Write(
+                        accepted ? LogEventLevel.Info : LogEventLevel.Warning,
+                        "Command.RefreshRequest",
+                        "accepted=" + accepted.ToString().ToLowerInvariant() + " source=" + settings.usageSource);
+                    return;
+                }
+
+                SafeLogger.Write("Command.ExitRequest", "accepted=true");
+                await ExitApplicationAsync();
+            }
+            catch (Exception ex)
+            {
+                SafeLogger.Write("Command.ExecutionFailed", "command=" + command + " error=" + ex.GetType().Name);
+            }
+        }
+
         private ToolStripMenuItem AddMenu(string text, EventHandler handler, string name)
         {
             var item = CreateMenuItem(text, handler, name);
@@ -465,16 +502,17 @@ namespace CodexUsageTrayLite
             return source == UsageSource.WebView2 || source == UsageSource.CodexCli;
         }
 
-        private void StartRefresh(bool manual, bool allowUnconfigured = false)
+        private bool StartRefresh(bool manual, bool allowUnconfigured = false)
         {
             var allowed = manual ? settings.CanManuallyRefreshUsage() : settings.CanRefreshUsage();
-            if (!allowUnconfigured && !allowed) return;
+            if (!allowUnconfigured && !allowed) return false;
             if (exiting || interactiveActionPending || fetchService.IsBusy || (loginForm != null && !loginForm.IsDisposed))
             {
-                return;
+                return false;
             }
             refreshTimer.Stop();
             activeRefreshTask = RefreshAsync(manual);
+            return true;
         }
 
         private async Task RefreshAsync(bool manual)
@@ -502,6 +540,13 @@ namespace CodexUsageTrayLite
                     visualState = TrayVisualState.Normal;
                     showingCachedData = false;
                     SaveSettingsSafely();
+                    SafeLogger.Write(
+                        "Refresh.Success",
+                        RefreshSuccessLogFormatter.Format(
+                            outcome.Snapshot,
+                            settings.usageSource,
+                            currentAccountEmail,
+                            outcome.Duration));
                 }
                 else if (outcome.Status == FetchStatus.LoginRequired)
                 {

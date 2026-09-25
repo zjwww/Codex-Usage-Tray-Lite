@@ -88,8 +88,8 @@ Windows 10 和 Windows on ARM 尚未作为目标环境验证。本程序不需�
 2. 解压前比对 SHA-256：
 
    ```powershell
-   Get-FileHash .\CodexUsageTrayLite-v0.2.26-win-x64.zip -Algorithm SHA256
-   Get-Content .\CodexUsageTrayLite-v0.2.26-win-x64.zip.sha256
+   Get-FileHash .\CodexUsageTrayLite-v0.3.1-win-x64.zip -Algorithm SHA256
+   Get-Content .\CodexUsageTrayLite-v0.3.1-win-x64.zip.sha256
    ```
 
 3. 将**整个 ZIP** 解压到固定目录，保留可执行文件旁的 DLL 和语言目录。不要直接在压缩包内运行。
@@ -100,6 +100,22 @@ Windows 10 和 Windows on ARM 尚未作为目标环境验证。本程序不需�
 
 可执行文件未进行代码签名。运行前请核验下载文件及来源。
 
+## 命令行
+
+命令行文字仅提供英文。不带参数时，程序按原方式启动通知区域应用。每次调用只使用一个参数：
+
+| 参数 | 作用 |
+| --- | --- |
+| `-help`、`-h`、`-?` | 显示命令行帮助。 |
+| `-version`、`-v` | 输出程序版本。 |
+| `-status` | 输出上次保存的用量快照，不刷新也不访问网络。 |
+| `-refresh` | 请求同一 Windows 会话内已运行的托盘实例立即刷新。 |
+| `-exit`、`-quit` | 请求已运行的托盘实例正常退出。 |
+| `-log-path` | 输出当前日志文件路径。 |
+| `-config-path` | 输出本地应用数据／配置目录。 |
+
+`-refresh` 与 `-exit`／`-quit` 需要同一 Windows 会话中存在可响应的托盘实例，否则返回退出代码 2；参数无效时返回 64。程序仍采用 Windows GUI 子系统，以避免正常启动托盘时闪出控制台。直接在交互式命令提示符或 PowerShell 中运行时，程序会原位清除未变化的提前提示符；若 CMD 在其正上方留下的完整可见间隔行仍为空白，输出会安全复用该行，使结果紧接命令显示；结果与恢复后的提示符之间保留一个空行。程序不会注入 Enter 或其他按键，提示符变化或不受支持时会使用安全换行后备。脚本需要严格按顺序执行时仍应显式等待此 GUI 进程，例如使用 `Start-Process .\CodexUsageTrayLite.exe -ArgumentList '-version' -NoNewWindow -Wait`。通过进程 API 重定向时可正常取得 stdout／stderr 与退出代码。“开机启动”使用的内部 `--startup` 参数也可手动运行，但其效果等同于正常的不带参数启动托盘。
+
 ## 升级与卸载
 
 升级时先选择 **Exit**，解压新版本完整文件，在程序退出后替换程序文件。如果启用了开机启动，建议保持安装路径不变；移动目录后可关闭并重新启用该选项。设置和 WebView2 配置保存在程序目录之外，会继续保留。
@@ -109,7 +125,7 @@ Windows 10 和 Windows on ARM 尚未作为目标环境验证。本程序不需�
 ## 隐私与故障排查
 
 - 本地数据保存在 `%LOCALAPPDATA%\CodexUsageTrayLite`。切勿公开其中的 `webview2-profile`，它可能包含有效登录会话。
-- 账户邮箱在内存中保存并显示于菜单；日志使用脱敏邮箱。程序不会读取 Codex CLI 凭据文件或其他浏览器的配置目录。
+- 账户邮箱在内存中保存并显示于菜单；日志使用脱敏邮箱。每次刷新成功会记录一条结构化用量快照，包含数据源、受支持的账户等级、5-Hour／Weekly 数值和重置时间、可用重置次数、获取时间及耗时。程序不会读取 Codex CLI 凭据文件或其他浏览器的配置目录。
 - WebView2 自行管理保存的 Cookie／会话，CLI 自行管理认证。没有接收用户数据的开发者后台服务。
 - 使用 **Open logs** 查看诊断信息，提交问题前请先检查日志内容。按日归档的日志不会自动删除。
 - WebView2 登录失效时重新打开登录页；缺少运行时则需单独安装。CLI 模式需要 `PATH` 中存在已登录、可正常使用的 CLI。
@@ -125,7 +141,18 @@ dotnet build .\CodexUsageTrayLite.sln -c Release -p:Platform=x64 --no-restore
 & .\tests\CodexUsageTrayLite.Tests\bin\x64\Release\net48\CodexUsageTrayLite.Tests.exe
 ```
 
-v0.2.26 构建通过了 **91 项自动化测试**，覆盖解析器、设置、本地化、图标像素、进程清理和模拟资源生命周期；这不代表全部真实登录流程、代理环境、硬件 DPI 或 8–12 小时持续运行均已验证。参见[验证说明](TESTING.md)。
+v0.3.1 构建通过了 **97 项自动化测试**，覆盖解析器、设置、本地化、渲染像素、命令行输出／退出代码、提示符文字／光标／输出行安全与开机启动兼容、会话内命令信号、菜单区域生命周期、进程清理和模拟资源生命周期；这不代表全部真实登录流程、代理环境、所有自定义／多行／彩色 Shell 提示符、实际通知区域定位、硬件 DPI 或 8–12 小时持续运行均已验证。参见[验证说明](TESTING.md)。
+
+## 版本历史与发布
+
+完整历史见[更新日志](CHANGELOG.zh-CN.md)。版本标题以实际 [GitHub Release 历史](https://github.com/zjwww/Codex-Usage-Tray-Lite/releases)为准：公开版本使用 `x.y.z`，从未公开发布的本地迭代使用 `x.y.z-local`。本地版本号较高，不代表已有对应的公开下载。
+
+每次 GitHub 发布前，先更新两份 README，并依据真实 Release 历史核对两份更新日志的全部版本标题，再完成包内文档定稿。明确获准发布的目标可在准备阶段使用公开标题。程序版本字段保持纯数字，通过文件名区分包的用途：
+
+- 本地迭代：`CodexUsageTrayLite-v<版本>-local-win-x64.zip`，运行 `scripts/package-release.ps1` 生成。
+- 获准发布的 GitHub 正式版：`CodexUsageTrayLite-v<版本>-win-x64.zip`，文档审核后运行 `scripts/package-release.ps1 -GitHubRelease` 单独生成。
+
+两类包均包含双语使用说明、完整更新日志、发布说明和校验文件。生成正式包时保留本地候选包，两类包均不得覆盖既有文件。历史归档保留原名；仅对本次授权的 v0.3.1 候选包执行一次性更名，迁移至本地包命名规范。
 
 ## 许可证与致谢
 

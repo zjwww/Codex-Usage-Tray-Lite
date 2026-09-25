@@ -88,8 +88,8 @@ Windows 10 and Windows on ARM are not validated targets. Python, Playwright, and
 2. Compare the SHA-256 hash before extracting:
 
    ```powershell
-   Get-FileHash .\CodexUsageTrayLite-v0.2.26-win-x64.zip -Algorithm SHA256
-   Get-Content .\CodexUsageTrayLite-v0.2.26-win-x64.zip.sha256
+   Get-FileHash .\CodexUsageTrayLite-v0.3.1-win-x64.zip -Algorithm SHA256
+   Get-Content .\CodexUsageTrayLite-v0.3.1-win-x64.zip.sha256
    ```
 
 3. Extract the **entire ZIP** into a permanent folder. Keep the DLLs and language folders beside the executable. Do not run from inside the ZIP.
@@ -100,6 +100,22 @@ A fresh installation waits for source setup instead of fetching automatically. S
 
 The executable is not code-signed. Verify the download and its source before running it.
 
+## Command line
+
+Command-line text is English only. With no option, the executable starts the normal notification-area application. Use one option per invocation:
+
+| Option | Action |
+| --- | --- |
+| `-help`, `-h`, `-?` | Show command-line help. |
+| `-version`, `-v` | Print the application version. |
+| `-status` | Print the last saved usage snapshot without refreshing or accessing the network. |
+| `-refresh` | Ask the already-running tray instance to refresh now. |
+| `-exit`, `-quit` | Ask the already-running tray instance to exit cleanly. |
+| `-log-path` | Print the current log-file path. |
+| `-config-path` | Print the local application data/configuration directory. |
+
+`-refresh` and `-exit`/`-quit` require a responsive tray instance in the same Windows session; they return exit code 2 otherwise. Invalid syntax returns 64. The program remains a Windows GUI-subsystem executable to avoid a console flash during ordinary startup. In direct interactive Command Prompt and PowerShell use, an unchanged prematurely rendered prompt is cleared in place. If CMD left a completely blank visible spacer row immediately above it, output safely reuses that row so the result directly follows the command; one empty line separates the result from the restored prompt. No Enter or other key is injected, and changed/unsupported prompts use a safe newline fallback. Scripts must still wait for this GUI process explicitly when command ordering matters, for example with `Start-Process .\CodexUsageTrayLite.exe -ArgumentList '-version' -NoNewWindow -Wait`. Redirected process APIs receive stdout/stderr and exit codes normally. The internal `--startup` argument used by Start at login is safe to run manually but is equivalent to a normal no-option tray launch.
+
 ## Upgrade and removal
 
 To upgrade, choose **Exit**, extract the new complete package, and replace the application files while it is stopped. Keep the same installation path if start at login is enabled, or disable/re-enable that option after moving the app. Settings and the WebView2 profile live outside the application folder and are retained.
@@ -109,7 +125,7 @@ To remove, disable **Start at login**, choose **Exit**, and delete the applicati
 ## Privacy and troubleshooting
 
 - Local data is stored under `%LOCALAPPDATA%\CodexUsageTrayLite`. Never publish its `webview2-profile` directory: it can contain an authenticated session.
-- Account email is kept in memory and shown in the menu. Logs use a masked email. The app does not read Codex CLI credential files or another browser's profile.
+- Account email is kept in memory and shown in the menu. Logs use a masked email. Each successful refresh records one structured quota snapshot with source, supported account level, 5-Hour/Weekly values and reset times, available reset count, fetched time, and duration. The app does not read Codex CLI credential files or another browser's profile.
 - WebView2 owns its saved cookies/session; CLI owns its own authentication. No developer-operated server receives your data.
 - Use **Open logs** for diagnostics. Review logs before attaching them to an issue. Daily log archives are not automatically removed.
 - If WebView2 login expires, reopen the login page. A missing runtime must be installed separately. CLI mode needs a working, signed-in CLI on `PATH`.
@@ -125,7 +141,18 @@ dotnet build .\CodexUsageTrayLite.sln -c Release -p:Platform=x64 --no-restore
 & .\tests\CodexUsageTrayLite.Tests\bin\x64\Release\net48\CodexUsageTrayLite.Tests.exe
 ```
 
-The v0.2.26 build passed **91 automated tests**. This covers parsers, settings, localization, renderer pixels, process cleanup, and simulated resource lifecycles; it is not proof of every authenticated browser flow, proxy setup, hardware DPI, or an 8–12 hour soak. See [validation details](TESTING.md).
+The v0.3.1 build passed **97 automated tests**. This covers parsers, settings, localization, renderer pixels, command-line output/exit codes, prompt text/cursor/output-row safety and startup compatibility, session-local command signaling, menu-region lifecycle, process cleanup, and simulated resource lifecycles; it is not proof of every authenticated browser flow, proxy setup, every custom/multiline/color shell prompt, live notification-area placement, hardware DPI, or an 8–12 hour soak. See [validation details](TESTING.md).
+
+## Version history and publication
+
+See the complete [changelog](CHANGELOG.md). Version headings follow the actual [GitHub Release history](https://github.com/zjwww/Codex-Usage-Tray-Lite/releases): public versions use `x.y.z`; local iterations that were never published use `x.y.z-local`. A higher local version does not imply that a public download exists.
+
+Before every GitHub publication, update both READMEs and reconcile every heading in both changelogs with actual Release history, then finalize package documentation. The explicitly authorized target may use its public heading during preparation. Application version fields remain numeric; filenames distinguish package channels:
+
+- Local iteration: `CodexUsageTrayLite-v<version>-local-win-x64.zip`, created with `scripts/package-release.ps1`.
+- Authorized GitHub release: `CodexUsageTrayLite-v<version>-win-x64.zip`, created separately with `scripts/package-release.ps1 -GitHubRelease` after documentation review.
+
+Both channels include bilingual package guides, complete changelogs, release notes, and checksums. Retain the local candidate when creating its formal counterpart; never overwrite an existing package in either channel. Historical archives keep their names, except for the authorized one-time rename of the v0.3.1 candidate to the local convention.
 
 ## License and acknowledgments
 

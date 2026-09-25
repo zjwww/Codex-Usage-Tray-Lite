@@ -1,5 +1,8 @@
 [CmdletBinding()]
-param()
+param(
+    # Use only for a version explicitly authorized for GitHub publication.
+    [switch]$GitHubRelease
+)
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
@@ -52,34 +55,42 @@ $changeLog = Get-Content -LiteralPath $changeLogPath -Raw
 $changeLogChinese = Get-Content -LiteralPath $changeLogChinesePath -Raw
 $releaseNotes = Get-Content -LiteralPath $releaseNotesPath -Raw
 $releaseNotesChinese = Get-Content -LiteralPath $releaseNotesChinesePath -Raw
-$currentChangeHeading = '(?m)^## ' + [Regex]::Escape($version) + ' - '
+$packageVersion = if ($GitHubRelease) { $version } else { "$version-local" }
+$sourceUrl = if ($GitHubRelease) { "https://github.com/zjwww/Codex-Usage-Tray-Lite/tree/v$version" } else { 'https://github.com/zjwww/Codex-Usage-Tray-Lite' }
+$currentChangeHeading = '(?m)^## ' + [Regex]::Escape($packageVersion) + ' - '
 $currentReleaseHeading = '(?m)^# What''s new in ' + [Regex]::Escape($version) + '\s*$'
 $currentReleaseChineseHeading = '(?m)^# ' + [Regex]::Escape($version) + ' 本版更新\s*$'
 if ($changeLog -notmatch $currentChangeHeading -or $changeLogChinese -notmatch $currentChangeHeading) {
-    throw "Both changelogs must begin their current history with version '$version' and no local suffix."
+    throw "Both changelogs must identify '$packageVersion' for this package channel. Reconcile GitHub history before using -GitHubRelease."
 }
 if ($releaseNotes -notmatch $currentReleaseHeading -or $releaseNotesChinese -notmatch $currentReleaseChineseHeading) {
     throw "Both release notes must identify current version '$version' and no local suffix."
 }
+# Publication status is reconciled against GitHub Releases before packaging;
+# a numeric version threshold cannot determine whether a version was published.
+$historyHeadingPattern = '(?m)^## (\d+\.\d+\.\d+)(?:-local)? - \d{4}-\d{2}-\d{2}\r?$'
+$englishHeadings = @([Regex]::Matches($changeLog, $historyHeadingPattern) | ForEach-Object { $_.Value.TrimEnd() })
+$chineseHeadings = @([Regex]::Matches($changeLogChinese, $historyHeadingPattern) | ForEach-Object { $_.Value.TrimEnd() })
+if (($englishHeadings -join "`n") -cne ($chineseHeadings -join "`n")) {
+    throw 'Both changelogs must have identical ordered version headings, publication markers, and dates.'
+}
+if ($englishHeadings.Count -eq 0 -or $englishHeadings[0] -notmatch $currentChangeHeading) {
+    throw "The first changelog version must be '$packageVersion'."
+}
 foreach ($history in @($changeLog, $changeLogChinese)) {
-    foreach ($requiredMarker in @('## 0.1.0-local - ', '## 0.2.15-local - ', '## 0.2.16 - ', '## 0.2.17 - ', '## 0.2.18 - ', '## 0.2.19 - ', '## 0.2.20 - ', '## 0.2.21 - ', '## 0.2.22 - ', '## 0.2.23 - ', '## 0.2.24 - ', '## 0.2.25 - ')) {
-        if (-not $history.Contains($requiredMarker)) {
-            throw "The complete changelog history is missing required marker '$requiredMarker'."
+    foreach ($requiredVersion in @('0.1.0', '0.2.15', '0.2.16', '0.2.17', '0.2.18', '0.2.19', '0.2.20', '0.2.21', '0.2.22', '0.2.23', '0.2.24', '0.2.25')) {
+        $requiredHeading = '(?m)^## ' + [Regex]::Escape($requiredVersion) + '(?:-local)? - '
+        if ($history -notmatch $requiredHeading) {
+            throw "The complete changelog history is missing required version '$requiredVersion'."
         }
-    }
-    if ($history.Contains('## 0.2.16-local - ') -or $history.Contains('## 0.2.17-local - ')) {
-        throw 'Versions 0.2.16 and later must use public version headings without the local suffix.'
     }
 }
 
-$packageName = "CodexUsageTrayLite-v$version-win-x64"
-if ($packageName -match '(?i)local') {
-    throw "The package filename must not contain local: $packageName"
-}
+$packageName = "CodexUsageTrayLite-v$packageVersion-win-x64"
 $zipPath = Join-Path $packageOutput ($packageName + '.zip')
 $zipHashPath = $zipPath + '.sha256'
 if ((Test-Path -LiteralPath $zipPath) -or (Test-Path -LiteralPath $zipHashPath)) {
-    throw "Package version '$version' already exists. Increase the project version; existing packages are never overwritten."
+    throw "Package '$packageName' already exists. Existing packages are never overwritten; increment the version for a new iteration."
 }
 
 $env:DOTNET_CLI_HOME = $dotnetHome
@@ -167,13 +178,15 @@ try {
     )) {
         $readme = Get-Content -LiteralPath $readmeDefinition.Template -Raw
         $readme = $readme.Replace('{{VERSION}}', $version)
+        $readme = $readme.Replace('{{SOURCE_URL}}', $sourceUrl)
+        $readme = $readme.Replace('{{PACKAGE_VERSION}}', $packageVersion)
         $readme = $readme.Replace('{{BASELINE_TAG}}', 'v2.0.0-preview.7')
         $readme = $readme.Replace('{{BASELINE_COMMIT}}', '36e9679164dcd7e5ef23d1f35822664785fad01f')
         $readme = $readme.Replace('{{TEST_COUNT}}', $testCount)
         if ($readme -match '\{\{[A-Z0-9_]+\}\}') {
             throw "Unresolved token in $($readmeDefinition.Template)."
         }
-        $expectedSourceUrl = "https://github.com/zjwww/Codex-Usage-Tray-Lite/tree/v$version"
+        $expectedSourceUrl = $sourceUrl
         if (-not $readme.Contains($expectedSourceUrl)) {
             throw "The package README source URL does not match v${version}: $($readmeDefinition.Template)"
         }

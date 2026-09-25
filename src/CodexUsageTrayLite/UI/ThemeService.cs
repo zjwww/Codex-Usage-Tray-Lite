@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using CodexUsageTrayLite.Infrastructure;
@@ -34,6 +35,8 @@ namespace CodexUsageTrayLite.UI
         private const string AppsUseLightThemeValue = "AppsUseLightTheme";
         private const int DwmUseImmersiveDarkMode = 20;
         private const int DwmUseImmersiveDarkModeBefore20H1 = 19;
+        private static readonly ConditionalWeakTable<ToolStrip, MenuRegionState> MenuRegionStates =
+            new ConditionalWeakTable<ToolStrip, MenuRegionState>();
 
         internal static TextFormatFlags MenuLabelTextFormatFlags
         {
@@ -133,6 +136,7 @@ namespace CodexUsageTrayLite.UI
             menu.ForeColor = palette.Text;
             ApplyMenuLayout(menu);
             ApplyToolStripItems(menu.Items, palette);
+            ConfigureMenuWindowRegion(menu, !palette.HighContrast);
             menu.Invalidate(true);
         }
 
@@ -292,9 +296,121 @@ namespace CodexUsageTrayLite.UI
                     dropDownItem.DropDown.BackColor = palette.SurfaceBackground;
                     dropDownItem.DropDown.ForeColor = palette.Text;
                     dropDownItem.DropDown.Renderer = new AppToolStripRenderer(palette);
+                    ConfigureMenuWindowRegion(dropDownItem.DropDown, !palette.HighContrast);
                     ApplyToolStripItems(dropDownItem.DropDownItems, palette);
                 }
             }
+        }
+
+        internal static bool ShouldRenderTrayMenuItemText(TrayMenuItem item, string renderText)
+        {
+            return item != null && string.Equals(renderText, item.Text, StringComparison.Ordinal);
+        }
+
+        internal static void ConfigureMenuWindowRegion(ToolStrip menu, bool useRoundedCorners)
+        {
+            if (menu == null || !(menu is ToolStripDropDown)) return;
+            var state = MenuRegionStates.GetValue(menu, CreateMenuRegionState);
+            state.UseRoundedCorners = useRoundedCorners;
+            UpdateMenuWindowRegion(menu, state);
+        }
+
+        private static MenuRegionState CreateMenuRegionState(ToolStrip menu)
+        {
+            var state = new MenuRegionState();
+            menu.SizeChanged += MenuWindowGeometryChanged;
+            menu.HandleCreated += MenuWindowGeometryChanged;
+            menu.DpiChangedAfterParent += MenuWindowGeometryChanged;
+            menu.Disposed += MenuWindowDisposed;
+            return state;
+        }
+
+        private static void MenuWindowGeometryChanged(object sender, EventArgs args)
+        {
+            var menu = sender as ToolStrip;
+            MenuRegionState state;
+            if (menu == null || !MenuRegionStates.TryGetValue(menu, out state)) return;
+            UpdateMenuWindowRegion(menu, state);
+        }
+
+        private static void MenuWindowDisposed(object sender, EventArgs args)
+        {
+            var menu = sender as ToolStrip;
+            MenuRegionState state;
+            if (menu == null || !MenuRegionStates.TryGetValue(menu, out state)) return;
+            if (state.OwnedRegion != null)
+            {
+                state.OwnedRegion.Dispose();
+                state.OwnedRegion = null;
+            }
+            MenuRegionStates.Remove(menu);
+        }
+
+        private static void UpdateMenuWindowRegion(ToolStrip menu, MenuRegionState state)
+        {
+            if (menu.IsDisposed || menu.Disposing) return;
+            var width = menu.Width;
+            var height = menu.Height;
+            var dpi = menu.DeviceDpi;
+            if (state.AppliedRoundedCorners == state.UseRoundedCorners &&
+                state.Width == width && state.Height == height && state.Dpi == dpi)
+            {
+                return;
+            }
+
+            Region nextRegion = null;
+            if (state.UseRoundedCorners && width > 1 && height > 1)
+            {
+                using (var path = CreateMenuRoundedRectangle(new Rectangle(0, 0, width, height), MenuCornerRadius(menu)))
+                {
+                    nextRegion = new Region(path);
+                }
+            }
+
+            var previousRegion = state.OwnedRegion;
+            try
+            {
+                menu.Region = nextRegion;
+                state.OwnedRegion = nextRegion;
+                state.AppliedRoundedCorners = state.UseRoundedCorners;
+                state.Width = width;
+                state.Height = height;
+                state.Dpi = dpi;
+            }
+            catch
+            {
+                if (nextRegion != null) nextRegion.Dispose();
+                throw;
+            }
+            if (previousRegion != null) previousRegion.Dispose();
+        }
+
+        private static int MenuCornerRadius(ToolStrip menu)
+        {
+            return Math.Max(3, menu.DeviceDpi * 6 / 96);
+        }
+
+        private static GraphicsPath CreateMenuRoundedRectangle(Rectangle rectangle, int radius)
+        {
+            var path = new GraphicsPath();
+            radius = Math.Max(1, Math.Min(radius, Math.Min(rectangle.Width, rectangle.Height) / 2));
+            var diameter = radius * 2;
+            path.AddArc(rectangle.Left, rectangle.Top, diameter, diameter, 180, 90);
+            path.AddArc(rectangle.Right - diameter, rectangle.Top, diameter, diameter, 270, 90);
+            path.AddArc(rectangle.Right - diameter, rectangle.Bottom - diameter, diameter, diameter, 0, 90);
+            path.AddArc(rectangle.Left, rectangle.Bottom - diameter, diameter, diameter, 90, 90);
+            path.CloseFigure();
+            return path;
+        }
+
+        private sealed class MenuRegionState
+        {
+            public bool UseRoundedCorners;
+            public bool AppliedRoundedCorners;
+            public int Width = -1;
+            public int Height = -1;
+            public int Dpi = -1;
+            public Region OwnedRegion;
         }
 
         internal static Color MenuItemTextColor(ToolStripItem item, ThemePalette palette)
@@ -364,7 +480,10 @@ namespace CodexUsageTrayLite.UI
                 }
 
                 var hasSummary = !string.IsNullOrEmpty(trayItem.SummaryText) && trayItem.Owner != null;
-                if (hasSummary && string.Equals(args.Text, trayItem.ShortcutKeyDisplayString, StringComparison.Ordinal))
+                // A ToolStripDropDownMenu may call the renderer once for the label
+                // and again for its shortcut column. Draw our custom row only for
+                // the label callback; otherwise status rows become artificially bold.
+                if (!ShouldRenderTrayMenuItemText(trayItem, args.Text))
                 {
                     return;
                 }
@@ -463,10 +582,15 @@ namespace CodexUsageTrayLite.UI
                     base.OnRenderToolStripBorder(args);
                     return;
                 }
+                if (palette.HighContrast)
+                {
+                    base.OnRenderToolStripBorder(args);
+                    return;
+                }
                 var rectangle = new Rectangle(0, 0, Math.Max(0, dropDown.Width - 1), Math.Max(0, dropDown.Height - 1));
                 if (rectangle.Width <= 0 || rectangle.Height <= 0) return;
                 using (var pen = new Pen(palette.Border))
-                using (var path = CreateRoundedRectangle(rectangle, Math.Max(3, dropDown.DeviceDpi * 6 / 96)))
+                using (var path = CreateMenuRoundedRectangle(rectangle, MenuCornerRadius(dropDown)))
                 {
                     args.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
                     args.Graphics.DrawPath(pen, path);

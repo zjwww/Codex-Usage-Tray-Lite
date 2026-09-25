@@ -4,7 +4,66 @@ Simplified Chinese edition: [CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md)
 
 This file records the functional changes from the local development release `0.1.0-local` through the current version. It is based on actual release handoffs from this development session, the project specification, test documentation, source code, and retained versioned ZIP archives.
 
-Versions before `0.2.16` were local development iterations and retain the `-local` suffix in this history. `0.2.16` was the first GitHub release. Starting with `0.1.1-local`, every user-visible update receives a new version number and a separate ZIP that cannot overwrite an older release; current local candidates and GitHub release assets use the same `CodexUsageTrayLite-v<version>-win-x64.zip` filename without a `local` suffix.
+Version headings follow the actual [GitHub Release history](https://github.com/zjwww/Codex-Usage-Tray-Lite/releases): published versions use `x.y.z`; local iterations that were never published use `x.y.z-local`. Before every GitHub publication, reconcile every heading in both changelogs and update both READMEs against that history. The explicitly authorized target may use its public heading during preparation; this does not mean it has already been published. `0.3.1` is the current publication target; the verified previous public releases are `0.2.16`, `0.2.18`, and `0.2.26`.
+
+Starting with `0.1.1-local`, every user-visible update receives a new version number and a separate immutable ZIP. Application version fields remain numeric. From this publication onward, local packages use `CodexUsageTrayLite-v<version>-local-win-x64.zip`; authorized GitHub packages are created separately as `CodexUsageTrayLite-v<version>-win-x64.zip` after documentation reconciliation. Local candidates are retained. Historical archives remain unchanged except for the authorized one-time rename of the v0.3.1 local candidate; its ZIP bytes and hash are preserved.
+
+## 0.3.1 - 2026-09-25
+
+### Release preparation
+
+- Separated local and GitHub package filenames and reconciled historical version headings against actual GitHub Releases. Both channels include bilingual guides, complete changelogs, and release notes; the formal package contains the reviewed publication documents.
+
+### Fixed
+
+- Removed the extra empty line that Command Prompt can place above command output when launching the GUI-subsystem executable. After validating and clearing the unchanged premature prompt, the app now reuses CMD's immediately preceding spacer row only when that complete visible console row is still blank.
+- Kept the requested single empty line below command output and the exact restored prompt. A nonblank, unavailable, or offscreen preceding row is never overwritten; all existing prompt-text/cursor checks and the no-key-injection rule remain in force.
+- Added output-row safety assertions and verified the final layout in a real interactive CMD session, including a successful follow-up command at the restored prompt. All 97 automated tests pass.
+
+## 0.3.0-local - 2026-09-25
+
+### Changed
+
+- Refined direct interactive Command Prompt and PowerShell output into the conventional layout: the shell's unchanged prematurely rendered prompt is cleared in place, command output begins on that line, one empty line follows the result, and the exact visible prompt is then restored.
+- Before clearing, the app rechecks the prompt text, cursor column, and row. Typed input, a moved cursor, unsupported/multiline content, redirection, or any console API failure retains the safe v0.2.30 newline fallback. The implementation never injects Enter or other keyboard input.
+- Added prompt text/cursor/row safety assertions and a real interactive CMD validation followed by another command at the restored prompt. All 97 automated tests pass.
+
+## 0.2.30-local - 2026-09-25
+
+### Fixed
+
+- Fixed interactive Command Prompt and PowerShell output from the GUI-subsystem EXE leaving the shell without a visible trailing prompt until Enter was pressed. The app now reads the already-rendered single-line shell prompt, moves command output below it, and restores the same visible prompt after output completes.
+- Prompt restoration never sends Enter, injects keystrokes, changes the shell prompt, or converts the app to a console-subsystem executable, so normal tray and Start at login launches still avoid a console flash. Redirected/scripted output remains unchanged and should still use normal process waiting when command ordering matters.
+- Added prompt-eligibility regression coverage while preserving the internal `--startup` tray-launch path. All 97 automated tests pass.
+
+## 0.2.29-local - 2026-09-25
+
+### Fixed
+
+- Preserved the existing internal `--startup` launch argument used by the current-user Start at login registry entry. It now follows the normal tray-start path instead of being rejected by the new command-line parser.
+- Added a regression assertion binding `StartupManager.BuildCommand(...)` to the parser's startup behavior. All 97 automated tests pass.
+
+## 0.2.28-local - 2026-09-25
+
+### Added
+
+- Added one structured `Refresh.Success` record after every successful refresh. The single line contains the source, masked email, user level, 5-Hour and Weekly remaining values/reset times, available usage-reset count, fetched timestamp, and refresh duration; unavailable values are explicit `Unknown` or `N/A`.
+- Added an English-only command-line interface: `-help`, `-version`, `-status`, `-refresh`, `-exit`/`-quit`, `-log-path`, and `-config-path`, with `-h`, `-?`, `-v`, `-logs-path`, and `-data-path` aliases. One option is accepted per invocation, and invalid syntax returns exit code 64.
+- Added lightweight session-local command signaling so `-refresh` and `-exit`/`-quit` control the already-running tray instance without launching a second WebView2/CLI collection. Missing or unresponsive instances return exit code 2.
+
+### Changed
+
+- `-status` prints the last saved usage snapshot without network access; path commands only print local paths. Starting the EXE without an option keeps the existing notification-area behavior.
+- Added parser, saved-status, privacy, named-command-channel, and compiled executable stdout/stderr/exit-code coverage. All 97 automated tests pass.
+
+## 0.2.27-local - 2026-09-25
+
+### Fixed
+
+- Prevented primary and secondary status rows from being drawn twice by ignoring the empty native shortcut-column text callback; Weekly, 5-Hour, Usage resets, and Last updated now retain their intended font weight.
+- Applied the same DPI-scaled rounded geometry to the actual main-menu and submenu window regions, backgrounds, and borders, removing rectangular corner protrusions in Light and Dark modes.
+- Preserved native summary-column width reservation, zero-gap submenu placement, keyboard navigation, the existing palette hierarchy, and square system rendering in Windows High Contrast mode.
+- Added single-pass pixel regression, main/submenu region and resize coverage, and repeated region-lifecycle checks. All 93 automated tests pass.
 
 ## 0.2.26 - 2026-09-24
 
@@ -13,14 +72,14 @@ Versions before `0.2.16` were local development iterations and retain the `-loca
 - Corrected the About menu's version prefix from `v.` to `v`; this release displays `v0.2.26`.
 - Preserved the smaller right-aligned summary styling and all v0.2.24 Update-menu behavior. All 91 automated tests pass.
 
-## 0.2.25 - 2026-09-24
+## 0.2.25-local - 2026-09-24
 
 ### Changed
 
 - Prefixed the About menu's right-side version summary with `v.`; for this release it displays `v.0.2.25`.
 - Kept the existing smaller summary font, right alignment, submenu geometry, Update command, and all functional behavior unchanged. All 91 automated tests pass.
 
-## 0.2.24 - 2026-09-24
+## 0.2.24-local - 2026-09-24
 
 ### Added
 
@@ -32,7 +91,7 @@ Versions before `0.2.16` were local development iterations and retain the `-loca
 - About now displays the current application version in the same smaller right-aligned summary style used elsewhere in the menu.
 - Added HTTPS URL-launch validation, structured update-page launch logging, menu-order/summary regression coverage, localization coverage, and production submenu renders. All 91 automated tests pass.
 
-## 0.2.23 - 2026-09-24
+## 0.2.23-local - 2026-09-24
 
 ### Fixed
 
@@ -41,7 +100,7 @@ Versions before `0.2.16` were local development iterations and retain the `-loca
 - Preserved the v0.2.22 native item bounds and zero-gap submenu placement; right-aligned setting summaries, menu hierarchy, commands, and behavior are unchanged.
 - Added a renderer contract regression and production WinForms renders for English/Simplified Chinese, Light/Dark, CLI/WebView2, and long-email font scaling. All 90 automated tests pass.
 
-## 0.2.22 - 2026-09-24
+## 0.2.22-local - 2026-09-24
 
 ### Fixed
 
@@ -49,7 +108,7 @@ Versions before `0.2.16` were local development iterations and retain the `-loca
 - Removed per-item horizontal margin and padding that increased the menu-item bounds without increasing the visible `ContextMenuStrip` window. Visual breathing room remains provided by the renderer's text geometry and inset selection background, so the R2 appearance is retained without affecting submenu coordinates.
 - Strengthened the regression baseline to use a truly unmodified WinForms submenu. All five summary-bearing parent items must now match its native edge behavior, including the normal one-pixel border overlap, in both normal-email and long-email layouts.
 
-## 0.2.21 - 2026-09-23
+## 0.2.21-local - 2026-09-23
 
 ### Partial fix
 
@@ -58,14 +117,14 @@ Versions before `0.2.16` were local development iterations and retain the `-loca
 - Removed the ineffective v0.2.20 direction override and restored WinForms' own screen-collision and left/right cascade behavior.
 - Target-machine verification showed that the large gap was reduced but an approximately 11-pixel gap remained. The first baseline still included the application's custom horizontal item spacing; `0.2.22` corrects that baseline and removes the remaining spacing from layout bounds.
 
-## 0.2.20 - 2026-09-23
+## 0.2.20-local - 2026-09-23
 
 ### Attempted fix
 
 - Attempted to address detached submenus by selecting an explicit adjacent left/right direction before opening.
 - Target-machine verification showed the gap was unchanged because the underlying parent item remained wider than the visible menu. This attempt is superseded by the size-metric correction in `0.2.21`.
 
-## 0.2.19 - 2026-09-23
+## 0.2.19-local - 2026-09-23
 
 ### Changed
 
@@ -85,7 +144,7 @@ Versions before `0.2.16` were local development iterations and retain the `-loca
 - Made the packaged source URL follow the current version automatically and added packaging checks for current release headings, historical cutover markers, unresolved template tokens, README source links, and `local`-free new ZIP names.
 - This documentation and packaging release does not change usage retrieval, menu behavior, icon rendering, settings, refresh timing, or process lifecycle behavior from `0.2.17`.
 
-## 0.2.17 - 2026-09-23
+## 0.2.17-local - 2026-09-23
 
 ### Changed
 
