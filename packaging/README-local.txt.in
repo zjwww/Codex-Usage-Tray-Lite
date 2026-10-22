@@ -27,11 +27,20 @@ marker does not change the numeric application version. Local packages use
 CodexUsageTrayLite-v<version>-local-win-x64.zip; authorized GitHub packages are
 created separately as CodexUsageTrayLite-v<version>-win-x64.zip with reviewed
 documentation. Retain local candidates; neither channel overwrites an existing
-package. A local candidate may contain changes not yet on GitHub.
+package. Formal promotion reuses the tested runtime binaries without rebuilding;
+the candidate and formal EXE SHA-256 hashes must match.
+A local candidate may contain changes not yet on GitHub.
 Public releases: https://github.com/zjwww/Codex-Usage-Tray-Lite/releases
 
 Usage source
 ------------
+WebView2 selects Overview on the updated Usage page before reading limit cards.
+It waits for stable quota data and may navigate once more if a page stalls,
+within a 45-second total fetch limit. Diagnostic logs identify the loading,
+selection, quota, and account stages without storing page text or credentials.
+Reset timestamps derived from rounded countdowns are approximate. It never
+activates Use reset or credit-purchase controls.
+
 The tray menu offers Usage source > WebView2 or Codex CLI. WebView2 is the
 default. Codex CLI mode requires an existing Codex CLI installation that is
 already signed in with ChatGPT (run "codex login" if needed). The CLI itself,

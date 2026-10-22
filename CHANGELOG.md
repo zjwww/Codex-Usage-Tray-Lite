@@ -4,9 +4,30 @@ Simplified Chinese edition: [CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md)
 
 This file records the functional changes from the local development release `0.1.0-local` through the current version. It is based on actual release handoffs from this development session, the project specification, test documentation, source code, and retained versioned ZIP archives.
 
-Version headings follow the actual [GitHub Release history](https://github.com/zjwww/Codex-Usage-Tray-Lite/releases): published versions use `x.y.z`; local iterations that were never published use `x.y.z-local`. Before every GitHub publication, reconcile every heading in both changelogs and update both READMEs against that history. The explicitly authorized target may use its public heading during preparation; this does not mean it has already been published. `0.3.1` is the current publication target; the verified previous public releases are `0.2.16`, `0.2.18`, and `0.2.26`.
+Version headings follow the actual [GitHub Release history](https://github.com/zjwww/Codex-Usage-Tray-Lite/releases): published versions use `x.y.z`; local iterations that were never published use `x.y.z-local`. Before every GitHub publication, reconcile every heading in both changelogs and update both READMEs against that history. The explicitly authorized target may use its public heading during preparation; this does not mean it has already been published. As checked on 2026-10-23, previous public releases are `0.2.16`, `0.2.18`, `0.2.26`, and `0.3.1`; `0.3.3` is the authorized publication target, while `0.3.2` remains a local-only iteration.
 
 Starting with `0.1.1-local`, every user-visible update receives a new version number and a separate immutable ZIP. Application version fields remain numeric. From this publication onward, local packages use `CodexUsageTrayLite-v<version>-local-win-x64.zip`; authorized GitHub packages are created separately as `CodexUsageTrayLite-v<version>-win-x64.zip` after documentation reconciliation. Local candidates are retained. Historical archives remain unchanged except for the authorized one-time rename of the v0.3.1 local candidate; its ZIP bytes and hash are preserved.
+
+## 0.3.3 - 2026-10-21
+
+### Fixed
+
+- Replaced navigation-completed-only collection with bounded polling through page loading, Overview selection, and stable rendered quota data. A dispatched click or HTTP 200 alone no longer establishes readiness; a Weekly-only card is confirmed for at least 2.25 seconds to allow a late 5-hour card.
+- Supports deeply wrapped Overview/Analytics navigation groups, waits after selection, and permits at most three spaced navigation clicks per page when a click has no effect. Valid quota data suppresses further clicks. Reset and purchase actions remain excluded.
+- Adds one recovery navigation after an 18-second page wait or a navigation/script failure. Both page attempts share the existing 45-second fetch deadline. Cancellation also completes while WebView2 creation is pending, with explicit close of a late controller.
+- Adds privacy-bounded navigation status, document/tab state, fetch stages, recovery, and terminal diagnostics. Logs include categorical reasons/counts and HTTP/WebView status, never page body text, full navigation URLs, tokens, or cookies.
+- Retains the hidden, non-activating host and normal controller cleanup. Account email/level lookup remains optional and cannot supply a missing quota.
+- Validation includes 103 automated tests, real-WebView2 deep/delayed/ineffective-tab fixtures, a production-session single-reload recovery and cancellation probe, and 20 consecutive authenticated local hidden reads. This does not establish long-duration reliability on the separate affected Windows 11 machine.
+
+## 0.3.2-local - 2026-10-20
+
+### Fixed
+
+- Adapted WebView2 collection to the updated Usage page. Background reads and initial login/usage navigation select Overview from the adjacent Overview/Analytics group; an already selected Overview is left alone.
+- Added English reset countdowns such as `Resets in 6d 15h` and `Resets in 2h 14m`. The reset timestamp is estimated from the rounded page countdown, rather than an exact server timestamp.
+- Bounded quota parsing before Recent plan usage, Credits, reset inventory, and credit history, preventing their percentages from supplying a missing current limit.
+- Navigation is limited to the HTTPS ChatGPT origin and visible, enabled, unambiguous navigation controls. Reset and purchase actions are never invoked; hidden fetch hosts remain unshown and close their controllers after reading.
+- Passed 100 automated tests, an offline real-WebView2 integration probe, and one authenticated hidden read on the updated English page (Weekly, available resets, Weekly-only applicability, and reset time).
 
 ## 0.3.1 - 2026-09-25
 

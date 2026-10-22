@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
@@ -14,6 +15,9 @@ namespace CodexUsageTrayLite.Services
     {
         internal const int MissingFiveHourConfirmationAttempts = 3;
         private readonly ProxySettings proxy;
+        private readonly CoreWebView2Environment testEnvironment;
+        private readonly Action<CoreWebView2> initializeTestCore;
+        private readonly string usageUrl;
         private Form hostForm;
         private CoreWebView2Controller controller;
         private CoreWebView2 core;
@@ -21,48 +25,95 @@ namespace CodexUsageTrayLite.Services
         private uint browserProcessId;
         private TaskCompletionSource<FetchOutcome> completion;
         private CancellationToken token;
-        private bool reading;
         private bool disposed;
         private bool usageResetProbeFailed;
+        private readonly Stopwatch elapsed = new Stopwatch();
+        private string stage = "starting";
+        private int pageAttempt;
+        private bool navigationInFlight;
+        private bool navigationFailed;
+        private ulong navigationId;
+        private string lastPageDiagnostic;
+        private string sourceCategory = "unavailable";
+        private UsagePageObservation lastObservation = new UsagePageObservation();
 
         public WebViewFetchSession(ProxySettings proxy)
+            : this(proxy, null, AppConstants.UsageUrl, null)
+        {
+        }
+
+        // Internal injection for offline integration probes. The application
+        // factory always uses the default constructor and official Usage URL.
+        internal WebViewFetchSession(ProxySettings proxy, CoreWebView2Environment testEnvironment,
+            string usageUrl, Action<CoreWebView2> initializeTestCore)
         {
             this.proxy = proxy ?? new ProxySettings { mode = ProxyMode.System };
+            this.testEnvironment = testEnvironment;
+            this.usageUrl = usageUrl;
+            this.initializeTestCore = initializeTestCore;
         }
 
         public async Task<FetchOutcome> RunAsync(CancellationToken cancellationToken)
         {
             token = cancellationToken;
             completion = new TaskCompletionSource<FetchOutcome>(TaskCreationOptions.RunContinuationsAsynchronously);
+            elapsed.Start();
+            using (token.Register(TrySetCancelled))
+            {
+                // Cancellation must also complete while environment/controller
+                // creation is pending. The worker closes any late controller.
+                _ = InitializeAndReadAsync();
+                return await completion.Task;
+            }
+        }
+
+        private async Task InitializeAndReadAsync()
+        {
             try
             {
+                SetStage("runtime");
                 var version = CoreWebView2Environment.GetAvailableBrowserVersionString();
                 if (string.IsNullOrWhiteSpace(version))
                 {
-                    return FetchOutcome.Create(FetchStatus.RuntimeMissing, "Microsoft Edge WebView2 Runtime is not installed.");
+                    TrySetOutcome(FetchOutcome.Create(FetchStatus.RuntimeMissing, "Microsoft Edge WebView2 Runtime is not installed."));
+                    return;
                 }
-                System.IO.Directory.CreateDirectory(AppPaths.WebViewProfileDirectory);
+                if (testEnvironment == null) System.IO.Directory.CreateDirectory(AppPaths.WebViewProfileDirectory);
                 CreateHiddenHost();
-                environment = await WebViewEnvironmentFactory.CreateAsync(proxy, token);
-                controller = await environment.CreateCoreWebView2ControllerAsync(hostForm.Handle);
+                SetStage("environment");
+                environment = testEnvironment ?? await WebViewEnvironmentFactory.CreateAsync(proxy, token);
+                token.ThrowIfCancellationRequested();
+                SetStage("controller");
+                var created = await environment.CreateCoreWebView2ControllerAsync(hostForm.Handle);
+                if (disposed || token.IsCancellationRequested)
+                {
+                    created.Close();
+                    SafeLogger.Write("WebView.LateControllerClosed", "processKill=false");
+                    return;
+                }
+                controller = created;
                 controller.Bounds = new Rectangle(Point.Empty, WebViewUsageResetDomProbe.BackgroundViewportSize);
                 controller.IsVisible = false;
                 core = controller.CoreWebView2;
                 WebViewEnvironmentFactory.ApplySecureSettings(core);
+                initializeTestCore?.Invoke(core);
                 core.NavigationStarting += HandleNavigationStarting;
                 core.NavigationCompleted += HandleNavigationCompleted;
                 core.ProcessFailed += HandleProcessFailed;
                 browserProcessId = WebViewProcessTelemetry.ControllerCreated("fetch", core);
                 SafeLogger.Write("WebView.FetchCreated", "runtime=" + version + " browserPid=" + (browserProcessId == 0 ? "unavailable" : browserProcessId.ToString()));
-                using (token.Register(TrySetCancelled))
-                {
-                    core.Navigate(AppConstants.UsageUrl);
-                    return await completion.Task;
-                }
+                await ReadWithRecoveryAsync();
             }
             catch (WebView2RuntimeNotFoundException)
             {
-                return FetchOutcome.Create(FetchStatus.RuntimeMissing, "Microsoft Edge WebView2 Runtime is not installed.");
+                TrySetOutcome(FetchOutcome.Create(FetchStatus.RuntimeMissing, "Microsoft Edge WebView2 Runtime is not installed."));
+            }
+            catch (OperationCanceledException) { TrySetCancelled(); }
+            catch (Exception) when (token.IsCancellationRequested || disposed) { TrySetCancelled(); }
+            catch (Exception ex)
+            {
+                WriteDiagnostic("exception-" + ex.GetType().Name);
+                TrySetOutcome(FetchOutcome.Create(FetchStatus.UnexpectedError, "The WebView2 usage read failed."));
             }
         }
 
@@ -124,7 +175,11 @@ namespace CodexUsageTrayLite.Services
 
         private void HandleNavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs args)
         {
+            navigationId = args.NavigationId;
+            navigationInFlight = true;
+            navigationFailed = false;
             Uri destination;
+            if (Uri.TryCreate(args.Uri, UriKind.Absolute, out destination)) UpdateSourceCategory(destination);
             if (!Uri.TryCreate(args.Uri, UriKind.Absolute, out destination) || !IsAllowedBackgroundDestination(destination))
             {
                 args.Cancel = true;
@@ -132,95 +187,230 @@ namespace CodexUsageTrayLite.Services
             }
         }
 
-        private async void HandleNavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs args)
+        private void HandleNavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs args)
         {
-            var pending = completion;
-            if (pending == null || pending.Task.IsCompleted || reading)
+            if (disposed || args.NavigationId != navigationId) return;
+            navigationInFlight = false;
+            navigationFailed = !args.IsSuccess;
+            UpdateSourceCategory(CurrentSource());
+            SafeLogger.Write(
+                args.IsSuccess ? LogEventLevel.Info : LogEventLevel.Warning,
+                "WebView.NavigationCompleted",
+                "attempt=" + pageAttempt + " success=" + args.IsSuccess.ToString().ToLowerInvariant() +
+                " httpStatus=" + args.HttpStatusCode + " webError=" + args.WebErrorStatus +
+                " source=" + SourceCategory());
+        }
+
+        private async Task ReadWithRecoveryAsync()
+        {
+            var lastError = "The expected usage fields were not found.";
+            var diagnostics = new UsageFieldDiagnostics();
+            for (pageAttempt = 1; pageAttempt <= 2; pageAttempt++)
             {
-                return;
-            }
-            if (!args.IsSuccess)
-            {
-                TrySetOutcome(FetchOutcome.Create(FetchStatus.NetworkError, "The ChatGPT usage page could not be loaded."));
-                return;
-            }
-                reading = true;
-            try
-            {
-                var lastError = "The expected usage fields were not found.";
-                var lastDiagnostics = new UsageFieldDiagnostics();
-                for (var attempt = 0; attempt < 30; attempt++)
+                token.ThrowIfCancellationRequested();
+                if (completion == null || completion.Task.IsCompleted) return;
+                lastPageDiagnostic = null;
+                navigationFailed = false;
+                var previousDocument = pageAttempt > 1 ? lastObservation.DocumentKey : null;
+                SetStage("navigation");
+                if (pageAttempt > 1) core.Stop();
+                core.Navigate(usageUrl);
+                var pageElapsed = Stopwatch.StartNew();
+                var readiness = new UsagePageReadiness();
+                var lastClick = TimeSpan.FromDays(-1);
+                var clickCount = 0;
+                var operationFailed = false;
+                while (pageElapsed.Elapsed < TimeSpan.FromSeconds(18))
                 {
                     token.ThrowIfCancellationRequested();
-                    var text = await ReadPageTextAsync();
+                    if (completion == null || completion.Task.IsCompleted) return;
+                    if (navigationFailed) { operationFailed = true; break; }
+                    if (navigationInFlight)
+                    {
+                        SetStage("navigation");
+                    }
+                    try
+                    {
+                        var allowClick = !readiness.HasCandidate && clickCount < 3 && pageElapsed.Elapsed - lastClick >= TimeSpan.FromSeconds(2);
+                        var json = await AwaitScriptAsync(core.ExecuteScriptAsync(WebViewUsagePageNavigator.BuildScript(allowClick, previousDocument)));
+                        lastObservation = WebViewUsagePageNavigator.ParseObservation(json);
+                        TraceObservation();
+                    }
+                    catch (TimeoutException)
+                    {
+                        WriteDiagnostic("script-timeout");
+                        operationFailed = true;
+                        break;
+                    }
+                    catch (System.Runtime.InteropServices.COMException) when (!disposed && !token.IsCancellationRequested)
+                    {
+                        WriteDiagnostic("script-com-error");
+                        operationFailed = true;
+                        break;
+                    }
+                    catch (InvalidOperationException) when (!disposed && !token.IsCancellationRequested)
+                    {
+                        // A script can race a real navigation; let the next poll
+                        // observe the new document before deciding to recover.
+                        readiness.Reset();
+                        SetStage("document-transition");
+                        await Task.Delay(400, token);
+                        continue;
+                    }
+                    var text = lastObservation.Text;
                     if (UsageParser.LooksLikeLoginRequired(CurrentSource(), text))
                     {
                         TrySetOutcome(FetchOutcome.Create(FetchStatus.LoginRequired, "ChatGPT login is required."));
                         return;
                     }
-                    UsageSnapshot snapshot;
-                    UsageFieldDiagnostics diagnostics;
-                    if (UsageParser.TryParse(text, DateTime.Now, out snapshot, out lastError, out diagnostics))
+                    if (!WebViewUsagePageNavigator.IsChatGptSource(CurrentSource()) || !lastObservation.TrustedOrigin ||
+                        (previousDocument != null && lastObservation.DocumentKey == previousDocument))
                     {
-                        if (snapshot.fiveHourLimitAbsenceInferred && attempt < MissingFiveHourConfirmationAttempts)
+                        readiness.Reset();
+                        SetStage("wait-new-usage-document");
+                    }
+                    else if (lastObservation.DocumentState == "loading")
+                    {
+                        readiness.Reset();
+                        SetStage("wait-document");
+                    }
+                    else if (lastObservation.State == UsageOverviewState.Selected)
+                    {
+                        clickCount++;
+                        lastClick = pageElapsed.Elapsed;
+                        readiness.Reset();
+                        SetStage("wait-overview");
+                        SafeLogger.Write("WebView.UsageOverviewSelected", "context=fetch attempt=" + pageAttempt + " click=" + clickCount + " confirmation=pending");
+                    }
+                    else
+                    {
+                        UsageSnapshot snapshot;
+                        if (!lastObservation.AnalyticsSelected &&
+                            UsageParser.TryParse(text, DateTime.Now, out snapshot, out lastError, out diagnostics))
                         {
-                            await Task.Delay(750, token);
-                            continue;
-                        }
-                        if (!snapshot.availableUsageResetCount.HasValue)
-                        {
-                            snapshot.availableUsageResetCount = await ReadAvailableUsageResetCountAsync();
-                            if (!snapshot.availableUsageResetCount.HasValue)
+                            SetStage("confirm-quota");
+                            if (readiness.Observe(snapshot, pageElapsed.Elapsed))
                             {
-                                var settledText = await ReadPageTextAsync();
-                                snapshot.availableUsageResetCount = ResolveMissingUsageResetCountForWeeklyOnly(
-                                    snapshot,
-                                    settledText,
-                                    !usageResetProbeFailed);
-                                if (snapshot.availableUsageResetCount.HasValue)
-                                {
-                                    SafeLogger.Write(
-                                        "WebView.UsageResetResolved",
-                                        "reason=weekly-only-section-absent");
-                                }
-                                else
-                                {
-                                    var resetReason = ClassifyMissingUsageReset(settledText, usageResetProbeFailed);
-                                    UsageFieldTelemetry.Write(UsageSource.WebView2, UsageDataField.Resets, resetReason);
-                                }
+                                SafeLogger.Write("WebView.UsagePageReady",
+                                    "attempt=" + pageAttempt + " evidence=stable-rendered-quota source=" + SourceCategory());
+                                await CompleteSnapshotAsync(snapshot, text);
+                                return;
                             }
                         }
-                        var outcome = FetchOutcome.Create(FetchStatus.Success, "Usage updated.", snapshot);
-                        var accountEmail = await ReadAccountEmailAsync();
-                        snapshot.userLevel = accountEmail.UserLevel != UserLevel.Unknown
-                            ? accountEmail.UserLevel
-                            : UserLevelHelper.ReadFromVisiblePageText(text);
-                        TrySetOutcome(accountEmail.Read ? outcome.WithAccountEmail(accountEmail.Email) : outcome);
-                        return;
+                        else
+                        {
+                            readiness.Reset();
+                            SetStage(lastObservation.State == UsageOverviewState.Ready ? "wait-quota" : "wait-overview");
+                            // Keep diagnostics populated even while Analytics is active.
+                            UsageSnapshot unused;
+                            UsageParser.TryParse(text, DateTime.Now, out unused, out lastError, out diagnostics);
+                        }
                     }
-                    lastDiagnostics = diagnostics;
-                    await Task.Delay(750, token);
+                    await Task.Delay(400, token);
                 }
-                UsageFieldTelemetry.WriteAll(UsageSource.WebView2, lastDiagnostics);
-                TrySetOutcome(FetchOutcome.Create(FetchStatus.ParseError, lastError));
+                if (UsagePageReadiness.ShouldRecover(pageAttempt, pageElapsed.Elapsed, operationFailed))
+                {
+                    WriteDiagnostic(operationFailed ? "navigation-or-script-failed-retry" : "page-not-ready-retry");
+                    SafeLogger.Write(LogEventLevel.Warning, "WebView.FetchRecovery",
+                        "attempt=1 nextAttempt=2 action=reload-usage remainingMs=" +
+                        Math.Max(0, AppConstants.FetchTimeoutSeconds * 1000 - (long)elapsed.Elapsed.TotalMilliseconds));
+                    continue;
+                }
+                UsageSnapshot failedSnapshot;
+                string failedParseError;
+                UsageParser.TryParse(lastObservation.Text, DateTime.Now, out failedSnapshot, out failedParseError, out diagnostics);
+                UsageFieldTelemetry.WriteAll(UsageSource.WebView2, diagnostics);
+                WriteDiagnostic(operationFailed ? "operation-failed" : "page-not-ready");
+                TrySetOutcome(FetchOutcome.Create(navigationFailed ? FetchStatus.NetworkError : FetchStatus.ParseError, lastError));
+                return;
             }
-            catch (OperationCanceledException)
+        }
+
+        private async Task CompleteSnapshotAsync(UsageSnapshot snapshot, string text)
+        {
+            if (!snapshot.availableUsageResetCount.HasValue)
             {
-                TrySetCancelled();
+                SetStage("read-resets");
+                snapshot.availableUsageResetCount = await ReadAvailableUsageResetCountAsync();
+                if (!snapshot.availableUsageResetCount.HasValue)
+                {
+                    var settledText = await ReadPageTextAsync();
+                    snapshot.availableUsageResetCount = ResolveMissingUsageResetCountForWeeklyOnly(
+                        snapshot, settledText, !usageResetProbeFailed);
+                    if (snapshot.availableUsageResetCount.HasValue)
+                        SafeLogger.Write("WebView.UsageResetResolved", "reason=weekly-only-section-absent");
+                    else
+                        UsageFieldTelemetry.Write(UsageSource.WebView2, UsageDataField.Resets,
+                            ClassifyMissingUsageReset(settledText, usageResetProbeFailed));
+                }
             }
-            catch (Exception) when (token.IsCancellationRequested)
-            {
-                TrySetCancelled();
-            }
-            catch (Exception ex)
-            {
-                SafeLogger.Write("Parser.Failed", ex.GetType().Name + ": " + ex.Message);
-                TrySetOutcome(FetchOutcome.Create(FetchStatus.ParseError, "The usage page could not be parsed."));
-            }
-            finally
-            {
-                reading = false;
-            }
+            SetStage("read-account");
+            var accountEmail = await ReadAccountEmailAsync();
+            snapshot.userLevel = accountEmail.UserLevel != UserLevel.Unknown
+                ? accountEmail.UserLevel : UserLevelHelper.ReadFromVisiblePageText(text);
+            SetStage("complete");
+            var outcome = FetchOutcome.Create(FetchStatus.Success, "Usage updated.", snapshot);
+            TrySetOutcome(accountEmail.Read ? outcome.WithAccountEmail(accountEmail.Email) : outcome);
+        }
+
+        private void SetStage(string value)
+        {
+            if (disposed || stage == value) return;
+            stage = value;
+            SafeLogger.Write("WebView.FetchStage", "attempt=" + pageAttempt + " stage=" + stage +
+                " elapsedMs=" + (long)elapsed.Elapsed.TotalMilliseconds);
+        }
+
+        private void TraceObservation()
+        {
+            UpdateSourceCategory(CurrentSource());
+            var signature = lastObservation.DocumentState + ":" + lastObservation.State + ":" +
+                lastObservation.Reason + ":" + lastObservation.Candidates + ":" + lastObservation.AnalyticsSelected;
+            if (signature == lastPageDiagnostic) return;
+            lastPageDiagnostic = signature;
+            SafeLogger.Write("WebView.UsagePageState", "attempt=" + pageAttempt + " source=" +
+                SourceCategory() + " " + lastObservation.Diagnostic);
+        }
+
+        private void WriteDiagnostic(string reason)
+        {
+            if (disposed) return;
+            SafeLogger.Write(LogEventLevel.Warning, "WebView.FetchDiagnostic",
+                "attempt=" + pageAttempt + " stage=" + stage + " reason=" + reason +
+                " elapsedMs=" + (long)elapsed.Elapsed.TotalMilliseconds + " source=" +
+                SourceCategory() + " navigationPending=" + navigationInFlight.ToString().ToLowerInvariant() +
+                " " + lastObservation.Diagnostic);
+        }
+
+        private string SourceCategory()
+        {
+            // Cancellation callbacks can run off the UI thread. Never access
+            // CoreWebView2 from diagnostics; use only this captured category.
+            return sourceCategory;
+        }
+
+        private void UpdateSourceCategory(Uri source)
+        {
+            if (source == null) { sourceCategory = "unavailable"; return; }
+            if (source.AbsolutePath.IndexOf("/auth", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                source.AbsolutePath.IndexOf("/login", StringComparison.OrdinalIgnoreCase) >= 0) sourceCategory = "auth";
+            else if (!WebViewUsagePageNavigator.IsChatGptSource(source)) sourceCategory = "other-origin";
+            else if (source.AbsolutePath.IndexOf("/settings/analytics", StringComparison.OrdinalIgnoreCase) >= 0) sourceCategory = "legacy-analytics";
+            else if (source.AbsolutePath.IndexOf("/settings/usage", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                source.Fragment.StartsWith("#settings/usage", StringComparison.OrdinalIgnoreCase)) sourceCategory = "usage";
+            else sourceCategory = "chatgpt-other";
+        }
+
+        private async Task<string> AwaitScriptAsync(Task<string> operation)
+        {
+            var timeout = Task.Delay(3500, token);
+            var winner = await Task.WhenAny(operation, timeout);
+            token.ThrowIfCancellationRequested();
+            if (winner == operation) return await operation;
+            // Observe a late fault without keeping the failed document alive.
+            _ = operation.ContinueWith(task => { var ignored = task.Exception; },
+                TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
+            throw new TimeoutException();
         }
 
         private void HandleProcessFailed(object sender, CoreWebView2ProcessFailedEventArgs args)
@@ -238,12 +428,16 @@ namespace CodexUsageTrayLite.Services
         private void TrySetCancelled()
         {
             var pending = completion;
-            if (pending != null) pending.TrySetCanceled(token);
+            if (pending != null && !pending.Task.IsCompleted)
+            {
+                WriteDiagnostic("cancelled-or-timeout");
+                pending.TrySetCanceled(token);
+            }
         }
 
         private async Task<string> ReadPageTextAsync()
         {
-            var json = await core.ExecuteScriptAsync("document.body ? document.body.innerText : ''");
+            var json = await AwaitScriptAsync(core.ExecuteScriptAsync("document.body ? document.body.innerText : ''"));
             return new JavaScriptSerializer().Deserialize<string>(json) ?? string.Empty;
         }
 
@@ -255,7 +449,7 @@ namespace CodexUsageTrayLite.Services
                 for (var attempt = 0; attempt < WebViewUsageResetDomProbe.MaximumAttempts; attempt++)
                 {
                     token.ThrowIfCancellationRequested();
-                    var json = await core.ExecuteScriptAsync(WebViewUsageResetDomProbe.Script);
+                    var json = await AwaitScriptAsync(core.ExecuteScriptAsync(WebViewUsageResetDomProbe.Script));
                     var count = WebViewUsageResetDomProbe.ParseCount(json);
                     if (count.HasValue) return count;
                     if (attempt + 1 < WebViewUsageResetDomProbe.MaximumAttempts)
@@ -339,8 +533,10 @@ namespace CodexUsageTrayLite.Services
             core.WebMessageReceived += handler;
             try
             {
-                await core.ExecuteScriptAsync(AccountEmailHelper.BuildWebViewScript(messagePrefix));
-                var timeout = Task.Delay(TimeSpan.FromSeconds(7), token);
+                var remaining = AppConstants.FetchTimeoutSeconds * 1000 - elapsed.Elapsed.TotalMilliseconds - 500;
+                if (remaining < 1000) return AccountEmailReadResult.Unavailable;
+                await AwaitScriptAsync(core.ExecuteScriptAsync(AccountEmailHelper.BuildWebViewScript(messagePrefix)));
+                var timeout = Task.Delay(TimeSpan.FromMilliseconds(Math.Min(7000, remaining)), token);
                 var winner = await Task.WhenAny(message.Task, timeout);
                 token.ThrowIfCancellationRequested();
                 if (winner != message.Task) return AccountEmailReadResult.Unavailable;

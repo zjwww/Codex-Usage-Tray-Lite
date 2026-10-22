@@ -20,6 +20,9 @@ namespace CodexUsageTrayLite.Services
             @"(?:GPT\s*[-\s.]*5\.?3\s*[-\s]*Codex\s*[-\s]*Spark|Codex\s*[-\s]*Spark|\bSpark\b)",
             RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
         private static readonly Regex Percent = new Regex(@"(?<value>\d{1,3})\s*%", RegexOptions.CultureInvariant);
+        private static readonly Regex QuotaSectionBoundary = new Regex(
+            @"(?im)^[ \t]*(?:Recent plan usage|Credits(?: remaining)?|Usage limit resets|Credit usage history|Usage breakdown|Auto[ -]?reload)[ \t]*\r?$",
+            RegexOptions.CultureInvariant);
         private static readonly Regex ResetLine = new Regex(
             @"(?im)^.*(?:reset(?:s|ting)?|重置|重设|重設|초기화|재설정|リセット).*$",
             RegexOptions.CultureInvariant);
@@ -332,6 +335,8 @@ namespace CodexUsageTrayLite.Services
                     break;
                 }
             }
+            var boundary = QuotaSectionBoundary.Match(text, label.EndIndex);
+            if (boundary.Success) end = Math.Min(end, boundary.Index);
             return end <= label.EndIndex ? string.Empty : text.Substring(label.EndIndex, end - label.EndIndex);
         }
 
@@ -376,6 +381,24 @@ namespace CodexUsageTrayLite.Services
                 return null;
             }
             var text = Regex.Replace(UsageParser.NormalizePageText(value), @"\s+", " ").Trim();
+            // The new Usage Overview shows countdowns rather than absolute dates.
+            // Accept only a complete, bounded duration, never a history date or
+            // an unqualified number that DateTime.TryParse might reinterpret.
+            if (Regex.IsMatch(text, @"^resets?\s+in\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                var duration = Regex.Replace(text, @"^resets?\s+in\s+", string.Empty,
+                    RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+                var durationPattern = @"^(?:(?<days>\d{1,2})\s*(?:days?|d)\s*)?(?:(?<hours>\d{1,2})\s*(?:hours?|hrs?|h)\s*)?(?:(?<minutes>\d{1,2})\s*(?:minutes?|mins?|m)\s*)?$";
+                var relative = Regex.Match(duration, durationPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+                if (!relative.Success || duration.Length == 0) return null;
+                var days = relative.Groups["days"].Success ? int.Parse(relative.Groups["days"].Value, CultureInfo.InvariantCulture) : 0;
+                var hours = relative.Groups["hours"].Success ? int.Parse(relative.Groups["hours"].Value, CultureInfo.InvariantCulture) : 0;
+                var minutes = relative.Groups["minutes"].Success ? int.Parse(relative.Groups["minutes"].Value, CultureInfo.InvariantCulture) : 0;
+                var span = new TimeSpan(days, hours, minutes, 0);
+                if (span > TimeSpan.FromDays(8) || hours > 23 || minutes > 59) return null;
+                try { return now.Add(span); }
+                catch (ArgumentOutOfRangeException) { return null; }
+            }
             text = Regex.Replace(text, @"(?i)\b(?:resets?|resetting)\b", string.Empty).Trim(' ', ':', '-', '–');
             text = Regex.Replace(text, @"(?i)\b(?:at|on)\b", " ");
             text = Regex.Replace(text, @"(?:重置|重设|重設)(?:时间|時間)?(?:为|為|于|於)?", string.Empty);

@@ -72,6 +72,14 @@ namespace CodexUsageTrayLite.Tests
                 {
                     return RunWebViewEmailProbe();
                 }
+                if (args.Length >= 1 && args[0] == "--webview-overview-probe")
+                {
+                    return WebViewOverviewProbe.Run();
+                }
+                if (args.Length >= 1 && args[0] == "--webview-usage-probe")
+                {
+                    return WebViewOverviewProbe.RunLive(args.Length >= 2 ? int.Parse(args[1]) : 1);
+                }
                 if (args.Length >= 2 && (args[0] == "--render-menu-r1" || args[0] == "--render-menu-r2"))
                 {
                     return RenderMenuR2(args[1]);
@@ -103,6 +111,12 @@ namespace CodexUsageTrayLite.Tests
             Test("ParserWeeklyOnlyAndExplicitUnlimitedPlans", ParserWeeklyOnlyAndExplicitUnlimitedPlans);
             Test("ParserMixedLanguageAndFullWidth", ParserMixedLanguageAndFullWidth);
             Test("ParserSparkAndAmbiguousDirectionSafeguards", ParserSparkAndAmbiguousDirectionSafeguards);
+            Test("ParserNewUsageOverview", ParserNewUsageOverview);
+            Test("RelativeOverviewResetTimes", RelativeOverviewResetTimes);
+            Test("UsageOverviewSourcePolicy", UsageOverviewSourcePolicy);
+            Test("UsagePageStableReadiness", UsagePageStableReadiness);
+            Test("UsagePageRecoveryBound", UsagePageRecoveryBound);
+            Test("UsagePageDiagnosticPrivacy", UsagePageDiagnosticPrivacy);
             Test("UsageResetCountParsing", UsageResetCountParsing);
             Test("LocalizedUsageResetCountParsing", LocalizedUsageResetCountParsing);
             Test("UsageResetEntryListParsing", UsageResetEntryListParsing);
@@ -190,6 +204,91 @@ namespace CodexUsageTrayLite.Tests
             Console.WriteLine("Failed: " + Failures.Count);
             foreach (var failure in Failures) Console.WriteLine("FAIL " + failure);
             return Failures.Count == 0 ? 0 : 1;
+        }
+
+        private static void ParserNewUsageOverview()
+        {
+            var now = new DateTime(2026, 10, 20, 10, 0, 0);
+            var text = "Usage\nOverview\nAnalytics\nPlan limits\n" +
+                "Shared across Codex, Work, Workspace Agents, and ChatGPT for Excel.\n" +
+                "Weekly limit\nResets in 6d 15h\n93% left\n" +
+                "Recent plan usage\n93%\nBalance history isn't available yet\nCredits\n" +
+                "0 credits remaining\nUsage limit resets\n" +
+                "Use a reset to restore your 5-hour limit, weekly limit, or both\n" +
+                "Available 3\nHistory\nFull reset\nUse reset\nFull reset\nUse reset\nFull reset\nUse reset\nCredit usage history";
+            UsageSnapshot snapshot;
+            string error;
+            True(UsageParser.TryParse(text, now, out snapshot, out error), error);
+            Equal(93, snapshot.weeklyRemainingPercent.Value);
+            Equal(now.AddDays(6).AddHours(15), snapshot.weeklyResetAt.Value);
+            Equal(3, snapshot.availableUsageResetCount.Value);
+            True(!snapshot.IsFiveHourLimitApplicable, "Weekly-only Overview was mistaken for a dual-window plan.");
+            var dual = "Usage\n5-hour limit\nResets in 2h 14m\n71% left\nWeekly limit\nResets in 6d 15h\n93% left\nRecent plan usage\n20%";
+            True(UsageParser.TryParse(dual, now, out snapshot, out error), error);
+            Equal(71, snapshot.fiveHourRemainingPercent.Value);
+            Equal(now.AddHours(2).AddMinutes(14), snapshot.fiveHourResetAt.Value);
+            True(!UsageParser.TryParse("Weekly limit\nResets in 6d 15h\nRecent plan usage\n93%\nCredits\n10% off", now, out snapshot, out error),
+                "A history/credit percentage was mistaken for the missing quota.");
+            True(!UsageParser.TryParse("Usage\nAnalytics\nRecent plan usage\n93%", now, out snapshot, out error),
+                "Analytics without a limit card was treated as current allowance.");
+        }
+
+        private static void RelativeOverviewResetTimes()
+        {
+            var now = new DateTime(2026, 12, 31, 23, 45, 0);
+            Equal(now.AddDays(6).AddHours(15), ResetTimeParser.TryParse("Resets in 6d 15h", now).Value);
+            Equal(now.AddHours(2).AddMinutes(14), ResetTimeParser.TryParse("Resets in 2h 14m", now).Value);
+            Equal(now.AddMinutes(5), ResetTimeParser.TryParse("Resets in 5 minutes", now).Value);
+            Equal(now, ResetTimeParser.TryParse("Resets in 0m", now).Value);
+            foreach (var invalid in new[] { "Resets in", "Resets in 93%", "Resets in 99d", "Resets in 2h 99m", "Resets in -2h", "Resets in 6d other text" })
+                True(!ResetTimeParser.TryParse(invalid, now).HasValue, "Malformed countdown accepted: " + invalid);
+        }
+
+        private static void UsageOverviewSourcePolicy()
+        {
+            True(WebViewUsagePageNavigator.IsChatGptSource(new Uri(AppConstants.UsageUrl)), "Entry URL was rejected.");
+            True(WebViewUsagePageNavigator.IsChatGptSource(new Uri("https://chatgpt.com/#settings/Usage")), "New settings hash was rejected.");
+            True(!WebViewUsagePageNavigator.IsChatGptSource(new Uri("https://chatgpt.com.attacker.invalid/")), "An external host was accepted.");
+            True(!WebViewUsagePageNavigator.IsChatGptSource(new Uri("http://chatgpt.com/")), "An insecure host was accepted.");
+            Equal(UsageOverviewState.Selected, WebViewUsagePageNavigator.ParseResult("\"selected\""));
+            Equal(UsageOverviewState.Ready, WebViewUsagePageNavigator.ParseResult("\"ready\""));
+            Equal(UsageOverviewState.Unavailable, WebViewUsagePageNavigator.ParseResult("null"));
+        }
+
+        private static void UsagePageStableReadiness()
+        {
+            var readiness = new UsagePageReadiness();
+            var snapshot = new UsageSnapshot { weeklyRemainingPercent = 87, fiveHourLimitApplies = false, fiveHourLimitAbsenceInferred = true };
+            True(!readiness.Observe(snapshot, TimeSpan.Zero), "One read was accepted as a settled Weekly-only page.");
+            True(readiness.HasCandidate, "A valid pending quota was not retained.");
+            True(!readiness.Observe(snapshot, TimeSpan.FromSeconds(1)), "Weekly-only confirmation ended too early.");
+            True(readiness.Observe(snapshot, TimeSpan.FromSeconds(2.4)), "Stable Weekly-only data never settled.");
+            snapshot.weeklyRemainingPercent = 86;
+            True(!readiness.Observe(snapshot, TimeSpan.FromSeconds(3)), "A changed quota bypassed stabilization.");
+            readiness.Reset();
+            True(!readiness.HasCandidate, "Document transition retained an old candidate.");
+            snapshot.fiveHourRemainingPercent = 75;
+            snapshot.fiveHourLimitApplies = true;
+            snapshot.fiveHourLimitAbsenceInferred = false;
+            True(!readiness.Observe(snapshot, TimeSpan.FromSeconds(4)), "Dual-window data was accepted after one read.");
+            True(readiness.Observe(snapshot, TimeSpan.FromSeconds(4.5)), "Stable dual-window data did not settle.");
+        }
+
+        private static void UsagePageRecoveryBound()
+        {
+            True(!UsagePageReadiness.ShouldRecover(1, TimeSpan.FromSeconds(17), false), "A still-loading first page was reloaded too early.");
+            True(UsagePageReadiness.ShouldRecover(1, TimeSpan.FromSeconds(18), false), "A stalled first page was not recovered.");
+            True(UsagePageReadiness.ShouldRecover(1, TimeSpan.FromSeconds(1), true), "A navigation/script failure was not recovered.");
+            True(!UsagePageReadiness.ShouldRecover(2, TimeSpan.FromSeconds(100), true), "The recovery policy permits an unbounded third navigation.");
+        }
+
+        private static void UsagePageDiagnosticPrivacy()
+        {
+            var observation = WebViewUsagePageNavigator.ParseObservation(
+                "{\"state\":\"ready\",\"reason\":\"private@example.test cookie=secret\",\"documentState\":\"private@example.test\",\"text\":\"private@example.test cookie=secret\",\"candidates\":2,\"analyticsSelected\":true}");
+            True(observation.Text.Contains("private@example.test"), "Page text was not retained for in-memory parsing.");
+            True(!observation.Diagnostic.Contains("private@example.test") && !observation.Diagnostic.Contains("secret"), "Page content leaked into stage diagnostics.");
+            True(observation.Diagnostic.Contains("document=unknown") && observation.Diagnostic.Contains("reason=unavailable"), "Unexpected page-controlled diagnostics were not bounded.");
         }
 
         private static void ParserNormalUsed()

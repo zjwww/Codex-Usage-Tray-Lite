@@ -93,6 +93,11 @@ if ((Test-Path -LiteralPath $zipPath) -or (Test-Path -LiteralPath $zipHashPath))
     throw "Package '$packageName' already exists. Existing packages are never overwritten; increment the version for a new iteration."
 }
 
+if ($GitHubRelease) {
+    & (Join-Path $scriptDirectory 'promote-release.ps1') -Version $version
+    return
+}
+
 $env:DOTNET_CLI_HOME = $dotnetHome
 $env:NUGET_PACKAGES = $packageCache
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = '1'

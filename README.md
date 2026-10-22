@@ -141,7 +141,7 @@ dotnet build .\CodexUsageTrayLite.sln -c Release -p:Platform=x64 --no-restore
 & .\tests\CodexUsageTrayLite.Tests\bin\x64\Release\net48\CodexUsageTrayLite.Tests.exe
 ```
 
-The v0.3.1 build passed **97 automated tests**. This covers parsers, settings, localization, renderer pixels, command-line output/exit codes, prompt text/cursor/output-row safety and startup compatibility, session-local command signaling, menu-region lifecycle, process cleanup, and simulated resource lifecycles; it is not proof of every authenticated browser flow, proxy setup, every custom/multiline/color shell prompt, live notification-area placement, hardware DPI, or an 8–12 hour soak. See [validation details](TESTING.md).
+The v0.3.3 build includes **103 automated tests** and a real-WebView2 offline integration probe covering delayed content, ineffective Overview selection, a single recovery navigation, cancellation, and reset-action exclusion. Collection waits for stable quota data instead of treating HTTP 200 or a dispatched click as readiness; stage diagnostics record bounded reasons without page text or credentials. Countdown-derived reset times remain estimates. Local repeated-read results and the boundary with other-machine, fresh-sign-in, and long-duration validation are documented in [validation details](TESTING.md).
 
 ## Version history and publication
 
@@ -150,7 +150,7 @@ See the complete [changelog](CHANGELOG.md). Version headings follow the actual [
 Before every GitHub publication, update both READMEs and reconcile every heading in both changelogs with actual Release history, then finalize package documentation. The explicitly authorized target may use its public heading during preparation. Application version fields remain numeric; filenames distinguish package channels:
 
 - Local iteration: `CodexUsageTrayLite-v<version>-local-win-x64.zip`, created with `scripts/package-release.ps1`.
-- Authorized GitHub release: `CodexUsageTrayLite-v<version>-win-x64.zip`, created separately with `scripts/package-release.ps1 -GitHubRelease` after documentation review.
+- Authorized GitHub release: `CodexUsageTrayLite-v<version>-win-x64.zip`, created separately with `scripts/package-release.ps1 -GitHubRelease` after documentation review. This promotion verifies the local ZIP and its manifest, reuses all runtime binaries without rebuilding, and requires identical candidate/formal EXE SHA-256 hashes.
 
 Both channels include bilingual package guides, complete changelogs, release notes, and checksums. Retain the local candidate when creating its formal counterpart; never overwrite an existing package in either channel. Historical archives keep their names, except for the authorized one-time rename of the v0.3.1 candidate to the local convention.
 

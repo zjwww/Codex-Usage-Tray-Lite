@@ -1,6 +1,8 @@
 using System;
 using System.Drawing;
+using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using CodexUsageTrayLite.Infrastructure;
 using CodexUsageTrayLite.Models;
@@ -21,6 +23,8 @@ namespace CodexUsageTrayLite.UI
         private uint browserProcessId;
         private CancellationTokenSource initializationCancellation;
         private bool disposed;
+        private bool overviewNavigationInProgress;
+        private bool overviewHandled;
 
         public bool ReachedUsagePage { get; private set; }
 
@@ -147,7 +151,7 @@ namespace CodexUsageTrayLite.UI
             }
         }
 
-        private void HandleNavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs args)
+        private async void HandleNavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs args)
         {
             if (!args.IsSuccess)
             {
@@ -156,8 +160,56 @@ namespace CodexUsageTrayLite.UI
             }
             Uri source;
             Uri.TryCreate(core == null ? null : core.Source, UriKind.Absolute, out source);
-            ReachedUsagePage = source != null && source.AbsolutePath.IndexOf("/codex/cloud/settings/analytics", StringComparison.OrdinalIgnoreCase) >= 0;
-            SetStatus(ReachedUsagePage ? LoginStatusState.UsageReached : LoginStatusState.CompleteSignIn);
+            SetStatus(ReachedUsagePage ? LoginStatusState.UsageReached : LoginStatusState.Opening);
+            if (overviewHandled || overviewNavigationInProgress || !WebViewUsagePageNavigator.IsChatGptSource(source)) return;
+            overviewNavigationInProgress = true;
+            var readiness = new UsagePageReadiness();
+            var timer = Stopwatch.StartNew();
+            var lastClick = TimeSpan.FromDays(-1);
+            var clicks = 0;
+            var observation = new UsagePageObservation();
+            try
+            {
+                while (!disposed && timer.Elapsed < TimeSpan.FromSeconds(16))
+                {
+                    var allowClick = !readiness.HasCandidate && clicks < 3 && timer.Elapsed - lastClick >= TimeSpan.FromSeconds(2);
+                    var json = await core.ExecuteScriptAsync(WebViewUsagePageNavigator.BuildScript(allowClick));
+                    if (disposed) return;
+                    observation = WebViewUsagePageNavigator.ParseObservation(json);
+                    if (observation.State == UsageOverviewState.Selected)
+                    {
+                        clicks++;
+                        lastClick = timer.Elapsed;
+                        readiness.Reset();
+                        SafeLogger.Write("WebView.UsageOverviewSelected", "context=login confirmation=pending");
+                    }
+                    else
+                    {
+                        UsageSnapshot snapshot;
+                        string error;
+                        if (!observation.AnalyticsSelected && UsageParser.TryParse(observation.Text, DateTime.Now, out snapshot, out error))
+                        {
+                            if (readiness.Observe(snapshot, timer.Elapsed))
+                            {
+                                overviewHandled = true;
+                                ReachedUsagePage = true;
+                                SetStatus(LoginStatusState.UsageReached);
+                                SafeLogger.Write("WebView.UsagePageReady", "context=login evidence=stable-rendered-quota");
+                                return;
+                            }
+                        }
+                        else readiness.Reset();
+                    }
+                    await Task.Delay(400);
+                }
+                if (!disposed)
+                    SafeLogger.Write(LogEventLevel.Warning, "WebView.LoginPageNotReady", observation.Diagnostic);
+            }
+            catch (Exception ex)
+            {
+                if (!disposed) SafeLogger.Write("WebView.UsageOverviewReadFailed", ex.GetType().Name);
+            }
+            finally { overviewNavigationInProgress = false; }
         }
 
         private void HandleProcessFailed(object sender, CoreWebView2ProcessFailedEventArgs args)

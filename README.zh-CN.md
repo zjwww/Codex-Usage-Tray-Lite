@@ -141,7 +141,7 @@ dotnet build .\CodexUsageTrayLite.sln -c Release -p:Platform=x64 --no-restore
 & .\tests\CodexUsageTrayLite.Tests\bin\x64\Release\net48\CodexUsageTrayLite.Tests.exe
 ```
 
-v0.3.1 构建通过了 **97 项自动化测试**，覆盖解析器、设置、本地化、渲染像素、命令行输出／退出代码、提示符文字／光标／输出行安全与开机启动兼容、会话内命令信号、菜单区域生命周期、进程清理和模拟资源生命周期；这不代表全部真实登录流程、代理环境、所有自定义／多行／彩色 Shell 提示符、实际通知区域定位、硬件 DPI 或 8–12 小时持续运行均已验证。参见[验证说明](TESTING.md)。
+v0.3.3 构建包含 **103 项自动化测试**，及真实 WebView2 离线集成测试，覆盖延迟内容、Overview 点击未生效、单次恢复导航、取消及排除重置操作。程序等待稳定额度，不再将 HTTP 200 或发出点击视为就绪；阶段日志仅记录有限原因，不记录网页正文或凭据。由倒计时换算的重置时间仍为估算值。本机重复读取结果，以及与其他机器、全新登录和长时间运行验证的边界，参见[验证说明](TESTING.md)。
 
 ## 版本历史与发布
 
@@ -150,7 +150,7 @@ v0.3.1 构建通过了 **97 项自动化测试**，覆盖解析器、设置、�
 每次 GitHub 发布前，先更新两份 README，并依据真实 Release 历史核对两份更新日志的全部版本标题，再完成包内文档定稿。明确获准发布的目标可在准备阶段使用公开标题。程序版本字段保持纯数字，通过文件名区分包的用途：
 
 - 本地迭代：`CodexUsageTrayLite-v<版本>-local-win-x64.zip`，运行 `scripts/package-release.ps1` 生成。
-- 获准发布的 GitHub 正式版：`CodexUsageTrayLite-v<版本>-win-x64.zip`，文档审核后运行 `scripts/package-release.ps1 -GitHubRelease` 单独生成。
+- 获准发布的 GitHub 正式版：`CodexUsageTrayLite-v<版本>-win-x64.zip`，文档审核后运行 `scripts/package-release.ps1 -GitHubRelease` 单独生成。此过程核验本地 ZIP 及内部清单，直接复用全部运行文件而不重新编译，并要求候选包与正式包的 EXE SHA-256 一致。
 
 两类包均包含双语使用说明、完整更新日志、发布说明和校验文件。生成正式包时保留本地候选包，两类包均不得覆盖既有文件。历史归档保留原名；仅对本次授权的 v0.3.1 候选包执行一次性更名，迁移至本地包命名规范。
 

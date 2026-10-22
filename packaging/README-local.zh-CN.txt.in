@@ -21,11 +21,17 @@ Release 历史核对全部版本标题并同步更新两份 README，在创建�
 包内文档定稿。获准发布的目标可在准备阶段使用公开标题。程序版本仍为纯数字。
 本地包使用 CodexUsageTrayLite-v<版本>-local-win-x64.zip；获准发布的正式包
 单独生成为 CodexUsageTrayLite-v<版本>-win-x64.zip，包含审核后的文档。
-保留本地候选包，两类包均不覆盖既有文件。本地候选包可能包含尚未同步到 GitHub 的修改。
+保留本地候选包，两类包均不覆盖既有文件。正式发布复用已测试运行文件，不重新编译；
+候选包与正式包的 EXE SHA-256 必须一致。本地候选包可能包含尚未同步到 GitHub 的修改。
 公开版本：https://github.com/zjwww/Codex-Usage-Tray-Lite/releases
 
 用量来源
 --------
+WebView2 会先选择新版 Usage 页中的 Overview，再读取额度卡。
+程序会等待稳定额度；页面停滞时可在总计 45 秒的刷新时限内最多重新导航一次。
+诊断日志区分加载、选择、额度和账号等阶段，不保存网页正文或凭据。
+由已取整倒计时换算的重置时间为估算值；不会触发 Use reset 或购买积分控件。
+
 托盘菜单的“用量来源”可选择 WebView2 或 Codex CLI，默认使用 WebView2。
 Codex CLI 模式要求本机已安装 Codex CLI，并已通过 ChatGPT 登录；如有需要可先运行
 “codex login”。本软件包不包含 Codex CLI、Node.js 或其凭据，也不会读取这些凭据。
